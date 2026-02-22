@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build python3-pip device-tree-compiler
+
+      - name: Install west
+        run: pip3 install west
+
+      - name: Cache west workspace
+        uses: actions/cache@v4
+        id: west-cache
+        with:
+          path: |
+            .west/
+            zmk/
+            zephyr/
+            modules/
+            bootloader/
+            tools/
+          key: west-${{ hashFiles('tests/west.yml') }}
+
+      - name: Initialize west workspace
+        if: steps.west-cache.outputs.cache-hit != 'true'
+        run: west init -l tests/ && west update
+
+      - name: Install Python dependencies
+        run: pip3 install -r zmk/app/scripts/requirements.txt
+
+      - name: Register Zephyr with CMake
+        run: |
+          cmake -P zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+          cmake -P zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+
+      - name: Run tests
+        run: ./run-tests

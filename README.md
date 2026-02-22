@@ -116,6 +116,53 @@ You only need one — it is stateless and reusable.
 
 ---
 
+## Testing
+
+Tests use ZMK's host-based simulation framework (`native_sim` board) — no hardware required.
+
+### Prerequisites
+
+```sh
+# macOS
+brew install cmake ninja python3 dtc
+pip3 install west
+```
+Run the init script once to set up the west workspace:
+
+```sh
+./init-tests
+```
+
+### Running the tests
+
+From the repo root (rerun whenever code changes):
+
+```sh
+./run-tests                     # run all tests
+./run-tests tests/default-win   # run a single test
+```
+
+The fetched dependencies (`zmk/`, `zephyr/`, etc.) are gitignored.
+
+### Updating snapshots
+
+If a test fails due to a snapshot mismatch rather than a logic error, regenerate the golden file with:
+
+```sh
+ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/select-mac
+```
+
+### Test cases
+
+| Test | What it verifies |
+|------|-----------------|
+| `default-win` | `okctrl` fires LCTRL with no OS selected (default = Windows) |
+| `select-mac` | `okctrl` fires LGUI after selecting macOS |
+| `select-lin` | `okctrl` fires LCTRL after selecting Linux |
+| `select-win-after-mac` | Switching from macOS back to Windows restores the Windows binding |
+
+---
+
 ## Notes
 
 - The default OS is **Windows** (`OS_WIN`). It persists only for the current power cycle; there is no flash storage.

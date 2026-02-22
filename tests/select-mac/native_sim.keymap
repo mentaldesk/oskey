@@ -1,0 +1,11 @@
+#include "../behavior_keymap.dtsi"
+
+/* Select macOS (row=0, col=1), then press okctrl (row=1, col=1). */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,10)
+        ZMK_MOCK_PRESS(1,1,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

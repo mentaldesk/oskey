@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+west init -l tests/
+west update
+pip3 install -r zmk/app/scripts/requirements.txt
+
+# Register Zephyr with cmake's user package registry so find_package(Zephyr)
+# works. This is a standard required step in Zephyr environment setup.
+cmake -P zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+cmake -P zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake

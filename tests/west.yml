@@ -1,0 +1,9 @@
+manifest:
+  projects:
+    - name: zmk
+      url: https://github.com/zmkfirmware/zmk
+      revision: main
+      import:
+        file: app/west.yml
+  self:
+    path: tests

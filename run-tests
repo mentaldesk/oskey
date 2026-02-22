@@ -1,0 +1,49 @@
+#!/bin/sh
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Resolve the test path to an absolute path
+if [ -n "$1" ]; then
+    case "$1" in
+        /*) TEST_PATH="$1" ;;
+        *)  TEST_PATH="$SCRIPT_DIR/$1" ;;
+    esac
+else
+    TEST_PATH="$SCRIPT_DIR/tests/"
+fi
+
+if [ "$(uname)" = "Darwin" ]; then
+    # Zephyr's native_sim board uses the POSIX arch, which requires Linux.
+    # On macOS, run the tests inside a Linux container instead.
+    if ! command -v docker >/dev/null 2>&1; then
+        echo "Error: tests require Linux. Install Docker Desktop to run them locally."
+        echo "See: https://docs.docker.com/desktop/install/mac-install/"
+        exit 1
+    fi
+    # Translate the host test path to its equivalent under the container mount point
+    DOCKER_TEST_PATH="/workspace${TEST_PATH#$SCRIPT_DIR}"
+    exec docker run --rm \
+        -v "$SCRIPT_DIR:/workspace" \
+        -e "ZMK_TEST_PATH=$DOCKER_TEST_PATH" \
+        -e ZMK_TESTS_AUTO_ACCEPT \
+        zmkfirmware/zmk-build-arm:4.1 \
+        bash -c '
+            set -e
+            cd /workspace
+            cmake -P /workspace/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+            cmake -P /workspace/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+            ZEPHYR_TOOLCHAIN_VARIANT=host \
+            ZMK_EXTRA_MODULES=/workspace \
+            ZMK_SRC_DIR=/workspace/zmk/app \
+            /workspace/zmk/app/run-test.sh "$ZMK_TEST_PATH"
+        '
+fi
+
+# Linux: run directly
+export ZEPHYR_BASE="$SCRIPT_DIR/zephyr"
+export ZEPHYR_TOOLCHAIN_VARIANT=host
+
+ZMK_EXTRA_MODULES="$SCRIPT_DIR" \
+ZMK_SRC_DIR="$SCRIPT_DIR/zmk/app" \
+"$SCRIPT_DIR/zmk/app/run-test.sh" "$TEST_PATH"

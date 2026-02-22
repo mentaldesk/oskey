@@ -1,0 +1,14 @@
+#include "../behavior_keymap.dtsi"
+
+/* Select macOS (row=0, col=1), then switch back to Windows (row=0, col=0),
+   then press okctrl (row=1, col=1) — should fire Windows binding (LCTRL). */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,10)
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+        ZMK_MOCK_PRESS(1,1,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

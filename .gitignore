@@ -3,8 +3,15 @@ build/
 out/
 .build/
 
-# West workspace
+# West workspace (root and standalone test workspace)
 .west/
+
+# Projects fetched by west update (applies at any depth)
+zephyr/
+zmk/
+modules/
+bootloader/
+tools/
 
 # Zephyr / CMake generated files
 CMakeCache.txt
@@ -12,8 +19,6 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 *.cmake
-zephyr/
-modules/
 
 # C build artifacts
 *.o

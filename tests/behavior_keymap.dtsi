@@ -1,0 +1,31 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+#include <dt-bindings/zmk/oskey.h>
+
+/ {
+    behaviors {
+        os_sel: os_selector {
+            compatible = "zmk,behavior-os-selector";
+            #binding-cells = <1>;
+        };
+
+        okctrl: os_key_ctrl {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /* Windows: LCTRL  macOS: LGUI  Linux: LCTRL */
+            bindings = <&kp LCTRL>, <&kp LGUI>, <&kp LCTRL>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &os_sel OS_WIN  &os_sel OS_MAC
+                &os_sel OS_LIN  &okctrl
+            >;
+        };
+    };
+};
