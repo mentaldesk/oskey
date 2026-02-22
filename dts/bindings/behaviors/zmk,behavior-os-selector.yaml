@@ -1,0 +1,24 @@
+description: |
+  OS Selector Behavior
+
+  Selects the current operating system so that os-key behaviors dispatch
+  to the correct per-OS binding.
+
+  Example usage in a keymap behaviors block:
+
+    os_sel: os_selector {
+        compatible = "zmk,behavior-os-selector";
+        #binding-cells = <1>;
+    };
+
+  Then bind it with the OS constant as the parameter:
+
+    &os_sel OS_WIN
+    &os_sel OS_MAC
+    &os_sel OS_LIN
+
+  (requires #include <dt-bindings/zmk/oskey.h> in the keymap file)
+
+compatible: "zmk,behavior-os-selector"
+
+include: one_param.yaml

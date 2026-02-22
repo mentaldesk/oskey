@@ -1,0 +1,33 @@
+description: |
+  OS Key Behavior
+
+  Dispatches to one of three bindings depending on the currently selected
+  operating system (set via the os-selector behavior).
+
+  The bindings property takes exactly three entries in order:
+    1. Windows binding
+    2. macOS binding
+    3. Linux binding
+
+  Example — a key that sends Ctrl on Windows/Linux but Cmd (GUI) on macOS:
+
+    oskey_ctrl_cmd: os_key_ctrl_cmd {
+        compatible = "zmk,behavior-os-key";
+        #binding-cells = <0>;
+        bindings = <&kp LCTRL>, <&kp LGUI>, <&kp LCTRL>;
+    };
+
+  Then in the keymap layer:
+
+    &oskey_ctrl_cmd
+
+compatible: "zmk,behavior-os-key"
+
+include: zero_param.yaml
+
+properties:
+  bindings:
+    type: phandle-array
+    required: true
+    description: |
+      Three behavior bindings in order: Windows, macOS, Linux.
