@@ -12,3 +12,19 @@ config ZMK_BEHAVIOR_OS_KEY
 config ZMK_OSKEY_STATE
     bool
     default y if ZMK_BEHAVIOR_OS_SELECTOR || ZMK_BEHAVIOR_OS_KEY
+
+choice ZMK_OSKEY_DEFAULT_OS
+    prompt "Default OS"
+    default ZMK_OSKEY_DEFAULT_OS_WINDOWS
+    depends on ZMK_OSKEY_STATE
+
+config ZMK_OSKEY_DEFAULT_OS_WINDOWS
+    bool "Windows"
+
+config ZMK_OSKEY_DEFAULT_OS_MACOS
+    bool "macOS"
+
+config ZMK_OSKEY_DEFAULT_OS_LINUX
+    bool "Linux"
+
+endchoice

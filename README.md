@@ -116,6 +116,22 @@ You only need one — it is stateless and reusable.
 
 ---
 
+## Configuration
+
+### Default OS
+
+The OS that is active on power-up. Set one of the following in your keyboard's `config/prj.conf`:
+
+```ini
+CONFIG_ZMK_OSKEY_DEFAULT_OS_WINDOWS=y  # default
+CONFIG_ZMK_OSKEY_DEFAULT_OS_MACOS=y
+CONFIG_ZMK_OSKEY_DEFAULT_OS_LINUX=y
+```
+
+The selection persists only for the current power cycle; there is no flash storage.
+
+---
+
 ## Testing
 
 Tests use ZMK's host-based simulation framework (`native_sim` board) — no hardware required.
@@ -165,6 +181,6 @@ ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/select-mac
 
 ## Notes
 
-- The default OS is **Windows** (`OS_WIN`). It persists only for the current power cycle; there is no flash storage.
+- The active OS persists only for the current power cycle; there is no flash storage. The power-up default is configurable — see [Configuration](#configuration).
 - When an `os-key` key is held and the OS selection changes before release, the release fires on the **same binding** that was activated at press time, preventing stuck modifier keys.
 - Both behaviors are only compiled for the central role in split keyboards; peripheral halves do not need behavior logic.
