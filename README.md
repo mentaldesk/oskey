@@ -187,18 +187,18 @@ Run the init script once to set up the west workspace:
 From the repo root (rerun whenever code changes):
 
 ```sh
-./run-tests                     # run all tests
-./run-tests tests/default-win   # run a single test
+./run-tests                          # run all tests
+./run-tests tests/oskey/default-win  # run a single test
 ```
 
-The fetched dependencies (`zmk/`, `zephyr/`, etc.) are gitignored.
+The fetched dependencies (`tests/zmk/`, `tests/zephyr/`, etc.) are gitignored.
 
 ### Updating snapshots
 
 If a test fails due to a snapshot mismatch rather than a logic error, regenerate the golden file with:
 
 ```sh
-ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/select-mac
+ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/oskey/select-mac
 ```
 
 ### Test cases

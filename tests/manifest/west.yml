@@ -6,4 +6,4 @@ manifest:
       import:
         file: app/west.yml
   self:
-    path: tests
+    path: manifest

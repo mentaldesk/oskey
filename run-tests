@@ -10,7 +10,7 @@ if [ -n "$1" ]; then
         *)  TEST_PATH="$SCRIPT_DIR/$1" ;;
     esac
 else
-    TEST_PATH="$SCRIPT_DIR/tests/"
+    TEST_PATH="$SCRIPT_DIR/tests/oskey/"
 fi
 
 if [ "$(uname)" = "Darwin" ]; then
@@ -30,20 +30,20 @@ if [ "$(uname)" = "Darwin" ]; then
         zmkfirmware/zmk-build-arm:4.1 \
         bash -c '
             set -e
-            cd /workspace
-            cmake -P /workspace/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
-            cmake -P /workspace/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+            cd /workspace/tests
+            cmake -P /workspace/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+            cmake -P /workspace/tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
             ZEPHYR_TOOLCHAIN_VARIANT=host \
             ZMK_EXTRA_MODULES=/workspace \
-            ZMK_SRC_DIR=/workspace/zmk/app \
-            /workspace/zmk/app/run-test.sh "$ZMK_TEST_PATH"
+            ZMK_SRC_DIR=/workspace/tests/zmk/app \
+            /workspace/tests/zmk/app/run-test.sh "$ZMK_TEST_PATH"
         '
 fi
 
 # Linux: run directly
-export ZEPHYR_BASE="$SCRIPT_DIR/zephyr"
+export ZEPHYR_BASE="$SCRIPT_DIR/tests/zephyr"
 export ZEPHYR_TOOLCHAIN_VARIANT=host
 
 ZMK_EXTRA_MODULES="$SCRIPT_DIR" \
-ZMK_SRC_DIR="$SCRIPT_DIR/zmk/app" \
-"$SCRIPT_DIR/zmk/app/run-test.sh" "$TEST_PATH"
+ZMK_SRC_DIR="$SCRIPT_DIR/tests/zmk/app" \
+"$SCRIPT_DIR/tests/zmk/app/run-test.sh" "$TEST_PATH"

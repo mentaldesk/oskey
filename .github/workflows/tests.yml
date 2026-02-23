@@ -25,25 +25,25 @@ jobs:
         id: west-cache
         with:
           path: |
-            .west/
-            zmk/
-            zephyr/
-            modules/
-            bootloader/
-            tools/
-          key: west-${{ hashFiles('tests/west.yml') }}
+            tests/.west/
+            tests/zephyr/
+            tests/zmk/
+            tests/modules/
+            tests/bootloader/
+            tests/tools/
+          key: west-${{ hashFiles('tests/manifest/west.yml') }}
 
       - name: Initialize west workspace
         if: steps.west-cache.outputs.cache-hit != 'true'
-        run: west init -l tests/ && west update
+        run: west init -l tests/manifest/ && (cd tests && west update)
 
       - name: Install Python dependencies
-        run: pip3 install -r zmk/app/scripts/requirements.txt
+        run: pip3 install -r tests/zmk/app/scripts/requirements.txt
 
       - name: Register Zephyr with CMake
         run: |
-          cmake -P zephyr/share/zephyr-package/cmake/zephyr_export.cmake
-          cmake -P zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+          cmake -P tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+          cmake -P tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
 
       - name: Run tests
         run: ./run-tests

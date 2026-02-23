@@ -1,0 +1,6 @@
+name: zmk-behavior-oskey
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .
