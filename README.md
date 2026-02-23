@@ -172,10 +172,10 @@ ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/select-mac
 
 | Test | What it verifies |
 |------|-----------------|
-| `default-win` | `okctrl` fires LCTRL with no OS selected (default = Windows) |
-| `select-mac` | `okctrl` fires LGUI after selecting macOS |
-| `select-lin` | `okctrl` fires LCTRL after selecting Linux |
-| `select-win-after-mac` | Switching from macOS back to Windows restores the Windows binding |
+| `default-win` | `os_test` fires `W` with no OS selected (default = Windows) |
+| `select-mac` | `os_test` fires `M` after selecting macOS |
+| `select-lin` | `os_test` fires `L` after selecting Linux |
+| `select-win-after-mac` | Switching from macOS back to Windows fires `W` again |
 
 ---
 

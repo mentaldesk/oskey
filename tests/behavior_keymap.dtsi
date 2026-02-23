@@ -10,11 +10,11 @@
             #binding-cells = <1>;
         };
 
-        okctrl: os_key_ctrl {
+        os_test: os_key_test {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
-            /* Windows: LCTRL  macOS: LGUI  Linux: LCTRL */
-            bindings = <&kp LCTRL>, <&kp LGUI>, <&kp LCTRL>;
+            /* Windows: W  macOS: M  Linux: L */
+            bindings = <&kp W>, <&kp M>, <&kp L>;
         };
     };
 
@@ -24,7 +24,7 @@
         default_layer {
             bindings = <
                 &os_sel OS_WIN  &os_sel OS_MAC
-                &os_sel OS_LIN  &okctrl
+                &os_sel OS_LIN  &os_test
             >;
         };
     };

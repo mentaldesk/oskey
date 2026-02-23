@@ -1,9 +1,2 @@
-pressed: usage_page 0x07 keycode 0xE3 implicit_mods 0x00 explicit_mods 0x00
-reg: Modifier 3 count 1
-reg: Modifiers set to 0x08
-mods: Modifiers set to 0x08
-released: usage_page 0x07 keycode 0xE3 implicit_mods 0x00 explicit_mods 0x00
-unreg: Modifier 3 count: 0
-unreg: Modifier 3 released
-unreg: Modifiers set to 0x00
-mods: Modifiers set to 0x00
+pressed: usage_page 0x07 keycode 0x10 implicit_mods 0x00 explicit_mods 0x00
+released: usage_page 0x07 keycode 0x10 implicit_mods 0x00 explicit_mods 0x00
