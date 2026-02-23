@@ -114,6 +114,39 @@ You only need one — it is stateless and reusable.
 };
 ```
 
+### 5. Combining OS selection with macros
+
+A common pattern is to switch Bluetooth profiles and set the OS in one keypress. Define a macro per profile using `zmk,behavior-macro`:
+
+```c
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/oskey.h>
+
+/ {
+    macros {
+        bt_win: bt_win {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&bt BT_SEL 0>, <&os_sel OS_WIN>;
+        };
+
+        bt_mac: bt_mac {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&bt BT_SEL 1>, <&os_sel OS_MAC>;
+        };
+
+        bt_lin: bt_lin {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            bindings = <&bt BT_SEL 2>, <&os_sel OS_LIN>;
+        };
+    };
+};
+```
+
+Then use `&bt_win`, `&bt_mac`, and `&bt_lin` in your keymap instead of the bare `&bt BT_SEL N` bindings.
+
 ---
 
 ## Configuration
