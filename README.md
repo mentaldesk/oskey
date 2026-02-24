@@ -170,5 +170,5 @@ Notes:
 
 ## Contributing
 
-Instructions for running the test suite are in [tests/README.md](tests/README.md).
+Instructions for running the test suite are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
