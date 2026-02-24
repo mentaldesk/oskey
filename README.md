@@ -77,14 +77,15 @@ You only need one — it is stateless and reusable.
         okctrl: os_key_ctrl {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
+            /*          Win          Mac         Lin  */
             bindings = <&kp LCTRL>, <&kp LGUI>, <&kp LCTRL>;
-            /*                 Win        Mac         Lin  */
         };
 
         /* Alt on Windows/Linux, Option (Alt) on macOS — same key, shown for clarity */
         okalt: os_key_alt {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
+            /*          Win          Mac        Lin  */
             bindings = <&kp LALT>, <&kp LALT>, <&kp LALT>;
         };
     };
@@ -161,59 +162,7 @@ CONFIG_ZMK_OSKEY_DEFAULT_OS_MACOS=y
 CONFIG_ZMK_OSKEY_DEFAULT_OS_LINUX=y
 ```
 
-The selection persists only for the current power cycle; there is no flash storage.
-
----
-
-## Testing
-
-Tests use ZMK's host-based simulation framework (`native_sim` board) — no hardware required.
-
-### Prerequisites
-
-```sh
-# macOS
-brew install cmake ninja python3 dtc
-pip3 install west
-```
-Run the init script once to set up the west workspace:
-
-```sh
-./init-tests
-```
-
-### Running the tests
-
-From the repo root (rerun whenever code changes):
-
-```sh
-./run-tests                          # run all tests
-./run-tests tests/oskey/default-win  # run a single test
-```
-
-The fetched dependencies (`tests/zmk/`, `tests/zephyr/`, etc.) are gitignored.
-
-### Updating snapshots
-
-If a test fails due to a snapshot mismatch rather than a logic error, regenerate the golden file with:
-
-```sh
-ZMK_TESTS_AUTO_ACCEPT=1 ./run-tests tests/oskey/select-mac
-```
-
-### Test cases
-
-| Test | What it verifies |
-|------|-----------------|
-| `default-win` | `os_test` fires `W` with no OS selected (default = Windows) |
-| `select-mac` | `os_test` fires `M` after selecting macOS |
-| `select-lin` | `os_test` fires `L` after selecting Linux |
-| `select-win-after-mac` | Switching from macOS back to Windows fires `W` again |
-
----
-
-## Notes
-
+Notes:
 - The active OS persists only for the current power cycle; there is no flash storage. The power-up default is configurable — see [Configuration](#configuration).
 - When an `os-key` key is held and the OS selection changes before release, the release fires on the **same binding** that was activated at press time, preventing stuck modifier keys.
-- Both behaviors are only compiled for the central role in split keyboards; peripheral halves do not need behavior logic.
+

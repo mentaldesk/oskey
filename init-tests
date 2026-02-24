@@ -3,11 +3,17 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-west init -l tests/manifest/
-(cd "$SCRIPT_DIR/tests" && west update)
-pip3 install -r "$SCRIPT_DIR/tests/zmk/app/scripts/requirements.txt"
+if ! command -v docker >/dev/null 2>&1; then
+    echo "Error: Docker is required to initialise the test workspace."
+    echo "Install Docker Desktop: https://docs.docker.com/desktop/"
+    exit 1
+fi
 
-# Register Zephyr with cmake's user package registry so find_package(Zephyr)
-# works. This is a standard required step in Zephyr environment setup.
-cmake -P "$SCRIPT_DIR/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
-cmake -P "$SCRIPT_DIR/tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake"
+docker run --rm \
+    -v "$SCRIPT_DIR:/workspace" \
+    zmkfirmware/zmk-build-arm:4.1 \
+    bash -c '
+        cd /workspace
+        [ -f tests/.west/config ] || west init -l tests/manifest/
+        [ -d tests/zmk ] || (cd tests && west update)
+    '
