@@ -166,9 +166,3 @@ Notes:
 - The active OS persists only for the current power cycle; there is no flash storage. The power-up default is configurable — see [Configuration](#configuration).
 - When an `os-key` key is held and the OS selection changes before release, the release fires on the **same binding** that was activated at press time, preventing stuck modifier keys.
 
----
-
-## Contributing
-
-Instructions for running the test suite are in [CONTRIBUTING.md](CONTRIBUTING.md).
-
