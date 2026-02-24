@@ -3,5 +3,13 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-west init -l tests/manifest/
-(cd "$SCRIPT_DIR/tests" && west update)
+if ! command -v docker >/dev/null 2>&1; then
+    echo "Error: Docker is required to initialise the test workspace."
+    echo "Install Docker Desktop: https://docs.docker.com/desktop/"
+    exit 1
+fi
+
+docker run --rm \
+    -v "$SCRIPT_DIR:/workspace" \
+    zmkfirmware/zmk-build-arm:4.1 \
+    bash -c 'cd /workspace && west init -l tests/manifest/ && cd tests && west update'

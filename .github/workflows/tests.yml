@@ -12,9 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install west
-        run: pip3 install west
-
       - name: Cache west workspace
         uses: actions/cache@v4
         id: west-cache
@@ -30,7 +27,7 @@ jobs:
 
       - name: Initialize west workspace
         if: steps.west-cache.outputs.cache-hit != 'true'
-        run: west init -l tests/manifest/ && (cd tests && west update)
+        run: ./init-tests
 
       - name: Run tests
         run: ./run-tests
