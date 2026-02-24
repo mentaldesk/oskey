@@ -22,6 +22,7 @@ fi
 DOCKER_TEST_PATH="/workspace${TEST_PATH#$SCRIPT_DIR}"
 exec docker run --rm \
     -v "$SCRIPT_DIR:/workspace" \
+    -v "$SCRIPT_DIR/build:/build" \
     -e "ZMK_TEST_PATH=$DOCKER_TEST_PATH" \
     -e ZMK_TESTS_AUTO_ACCEPT \
     zmkfirmware/zmk-build-arm:4.1 \
