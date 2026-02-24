@@ -14,10 +14,8 @@ jobs:
 
       - name: Cache west workspace
         uses: actions/cache@v4
-        id: west-cache
         with:
           path: |
-            tests/.west/
             tests/zephyr/
             tests/zmk/
             tests/modules/
@@ -26,7 +24,6 @@ jobs:
           key: west-${{ hashFiles('tests/manifest/west.yml') }}
 
       - name: Initialize west workspace
-        if: steps.west-cache.outputs.cache-hit != 'true'
         run: ./init-tests
 
       - name: Run tests
