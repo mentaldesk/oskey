@@ -167,16 +167,18 @@ The selection persists only for the current power cycle; there is no flash stora
 
 ## Testing
 
-Tests use ZMK's host-based simulation framework (`native_sim` board) — no hardware required.
+Tests use ZMK's host-based simulation framework (`native_sim` board) — no hardware required. All builds run inside the `zmkfirmware/zmk-build-arm` Docker image, so the environment is identical locally and in CI.
 
 ### Prerequisites
 
+- [Docker Desktop](https://docs.docker.com/desktop/) (macOS or Linux)
+- `west` — for the one-time workspace fetch:
+
 ```sh
-# macOS
-brew install cmake ninja python3 dtc
 pip3 install west
 ```
-Run the init script once to set up the west workspace:
+
+Run the init script once to fetch the west workspace dependencies:
 
 ```sh
 ./init-tests

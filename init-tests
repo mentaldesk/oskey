@@ -5,9 +5,3 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 west init -l tests/manifest/
 (cd "$SCRIPT_DIR/tests" && west update)
-pip3 install -r "$SCRIPT_DIR/tests/zmk/app/scripts/requirements.txt"
-
-# Register Zephyr with cmake's user package registry so find_package(Zephyr)
-# works. This is a standard required step in Zephyr environment setup.
-cmake -P "$SCRIPT_DIR/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake"
-cmake -P "$SCRIPT_DIR/tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake"
