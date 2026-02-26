@@ -1,0 +1,24 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        hold_fn_test: hold_fn_test {
+            compatible = "zmk,behavior-hold-fn";
+            #binding-cells = <0>;
+            bindings = <&kp GLOBE>, <&kp LC(LEFT)>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &hold_fn_test  &none
+                &none          &none
+            >;
+        };
+    };
+};

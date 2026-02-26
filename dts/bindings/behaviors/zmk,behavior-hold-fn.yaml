@@ -1,0 +1,36 @@
+description: |
+  Hold-Fn Behavior
+
+  Holds the Fn/Globe key (C_AC_NEXT_KEYBOARD_LAYOUT_SELECT) while pressing
+  and releasing a single child binding.  Intended for macOS window-management
+  shortcuts that require Fn held alongside another key combination.
+
+  Example — Tile Left (Globe+Ctrl+Left on macOS):
+
+    mac_tile_left: mac_fn_tile_left {
+        compatible = "zmk,behavior-hold-fn";
+        #binding-cells = <0>;
+        bindings = <&kp GLOBE>, <&kp LC(LEFT)>;
+    };
+
+  Use this as the macOS binding inside a zmk,behavior-os-key:
+
+    ok_win_tile_left: os_key_win_tile_left {
+        compatible = "zmk,behavior-os-key";
+        #binding-cells = <0>;
+        /*                   Win                   Mac                    Lin  */
+        bindings = <&kp LG(LEFT)>, <&mac_tile_left>, <&none>;
+    };
+
+compatible: "zmk,behavior-hold-fn"
+
+include: zero_param.yaml
+
+properties:
+  bindings:
+    type: phandle-array
+    required: true
+    description: |
+      Two behavior bindings:
+        1. hold-binding — held down for the duration (e.g. &kp GLOBE)
+        2. tap-binding  — pressed then released while hold-binding is active (e.g. &kp LC(LEFT))

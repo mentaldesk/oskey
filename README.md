@@ -18,6 +18,30 @@ Stores the desired OS so that `os-key` behaviors dispatch to the correct binding
 
 Holds three bindings (Windows, macOS, Linux). Whichever OS is currently selected determines which binding fires on press/release.
 
+### `hold-fn` — Hold Globe/Fn while pressing a binding
+
+Holds the macOS Globe/Fn key (`C_AC_NEXT_KEYBOARD_LAYOUT_SELECT`) while pressing and releasing a child binding. This is primarily useful for macOS window-management shortcuts that require `Fn` held alongside another key combo (e.g. `Fn+Ctrl+Left` = Tile Left).
+
+```c
+mac_tile_left: mac_fn_tile_left {
+    compatible = "zmk,behavior-hold-fn";
+    #binding-cells = <0>;
+    bindings = <&kp GLOBE>, <&kp LC(LEFT)>;
+};
+};
+```
+
+Combine with `os-key` to send the right shortcut per OS:
+
+```c
+ok_win_tile_left: os_key_win_tile_left {
+    compatible = "zmk,behavior-os-key";
+    #binding-cells = <0>;
+    /*                   Win               Mac                Lin  */
+    bindings = <&kp LG(LEFT)>, <&mac_tile_left>, <&none>;
+};
+```
+
 ---
 
 ## Installation

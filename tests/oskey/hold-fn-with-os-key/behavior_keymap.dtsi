@@ -1,0 +1,37 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+#include <dt-bindings/zmk/oskey.h>
+
+/ {
+    behaviors {
+        os_sel: os_selector {
+            compatible = "zmk,behavior-os-selector";
+            #binding-cells = <1>;
+        };
+
+        hold_fn_test: hold_fn_test {
+            compatible = "zmk,behavior-hold-fn";
+            #binding-cells = <0>;
+            bindings = <&kp GLOBE>, <&kp LC(LEFT)>;
+        };
+
+        os_hold_fn_test: os_key_hold_fn_test {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /* Windows: W  macOS: GLOBE+Ctrl+Left  Linux: L */
+            bindings = <&kp W>, <&hold_fn_test>, <&kp L>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &none            &os_sel OS_MAC
+                &os_hold_fn_test &none
+            >;
+        };
+    };
+};
