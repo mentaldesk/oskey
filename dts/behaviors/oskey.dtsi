@@ -207,5 +207,11 @@
             bindings = <&kp LG(L)>, <&kp LG(LC(Q))>, <&kp LC(LA(L))>;
         };
 
+        ok_force_quit: os_key_force_quit {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                  Win (Task Mgr)    Mac (Force Quit)    Lin (KDE: Sys Activity) */
+            bindings = <&kp LS(LC(ESC))>, <&kp LA(LG(ESC))>, <&kp LC(ESC)>;
+        };
     };
 };
