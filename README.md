@@ -45,6 +45,40 @@ manifest:
 
 ---
 
+## Built-in Common Behaviors
+
+oskey ships a ready-made set of OS-aware navigation behaviors. Instead of writing them yourself, just include:
+
+```c
+#include <behaviors/oskey.dtsi>
+```
+
+The following behavior labels become available immediately:
+
+| Label               | Action                          | Win                | Mac                | Lin                |
+|---------------------|---------------------------------|--------------------|--------------------|--------------------|
+| `&ok_prev_word`     | Move cursor back one word       | `Ctrl+Left`        | `Option+Left`      | `Ctrl+Left`        |
+| `&ok_next_word`     | Move cursor forward one word    | `Ctrl+Right`       | `Option+Right`     | `Ctrl+Right`       |
+| `&ok_line_start`    | Beginning of line               | `Home`             | `Cmd+Left`         | `Home`             |
+| `&ok_line_end`      | End of line                     | `End`              | `Cmd+Right`        | `End`              |
+| `&ok_doc_start`     | Beginning of document           | `Ctrl+Home`        | `Cmd+Up`           | `Ctrl+Home`        |
+| `&ok_doc_end`       | End of document                 | `Ctrl+End`         | `Cmd+Down`         | `Ctrl+End`         |
+| `&ok_sel_prev_word` | Select back one word            | `Shift+Ctrl+Left`  | `Shift+Option+Left`  | `Shift+Ctrl+Left`  |
+| `&ok_sel_next_word` | Select forward one word         | `Shift+Ctrl+Right` | `Shift+Option+Right` | `Shift+Ctrl+Right` |
+| `&ok_sel_line_start`| Select to beginning of line     | `Shift+Home`       | `Shift+Cmd+Left`   | `Shift+Home`       |
+| `&ok_sel_line_end`  | Select to end of line           | `Shift+End`        | `Shift+Cmd+Right`  | `Shift+End`        |
+| `&ok_sel_doc_start` | Select to beginning of document | `Shift+Ctrl+Home`  | `Shift+Cmd+Up`     | `Shift+Ctrl+Home`  |
+| `&ok_sel_doc_end`   | Select to end of document       | `Shift+Ctrl+End`   | `Shift+Cmd+Down`   | `Shift+Ctrl+End`   |
+| `&ok_mission_ctrl`  | Show all windows / task overview | `Win+Tab`         | `Ctrl+Up`          | `none` ¹           |
+| `&ok_desktop`       | Show desktop                    | `Win+D`            | `Ctrl+Cmd+D`       | `none` ¹           |
+| `&ok_lock`          | Lock the computer               | `Win+L`            | `Ctrl+Cmd+Q`       | `Ctrl+Alt+L` ²     |
+
+¹ Linux window-management shortcuts are desktop-environment specific (GNOME, KDE, Cinnamon, etc.) and have no universal standard. The Linux binding is `&none` by default — override it in your keymap for your DE.
+
+² `Ctrl+Alt+L` is the default lock shortcut in GNOME, KDE Plasma, and Cinnamon. It may differ on other DEs.
+
+---
+
 ## Usage
 
 ### 1. Include the OS constants header in your keymap file

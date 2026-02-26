@@ -1,0 +1,157 @@
+/*
+ * Copyright (c) 2024 mentaldesk
+ * SPDX-License-Identifier: MIT
+ *
+ * Common OS-aware navigation and editing behaviors for oskey.
+ *
+ * Include in your keymap with:
+ *   #include <behaviors/oskey.dtsi>
+ *
+ * Requires CONFIG_ZMK_BEHAVIOR_OS_KEY=y (enabled automatically when the
+ * oskey module is present and any os-key behavior is used).
+ *
+ * Navigation behaviors:
+ *   &ok_prev_word    move cursor back one word
+ *   &ok_next_word    move cursor forward one word
+ *   &ok_line_start   move to beginning of line
+ *   &ok_line_end     move to end of line
+ *   &ok_doc_start    move to beginning of document
+ *   &ok_doc_end      move to end of document
+ *
+ * Selection behaviors (Shift + navigation):
+ *   &ok_sel_prev_word    select back one word
+ *   &ok_sel_next_word    select forward one word
+ *   &ok_sel_line_start   select to beginning of line
+ *   &ok_sel_line_end     select to end of line
+ *   &ok_sel_doc_start    select to beginning of document
+ *   &ok_sel_doc_end      select to end of document
+ *
+ * Window management behaviors:
+ *   &ok_mission_ctrl     show all open windows / task overview
+ *   &ok_desktop          show desktop
+ *   &ok_lock             lock the computer
+ *
+ * Note: Linux equivalents for window management vary by desktop environment
+ * (GNOME, KDE, Cinnamon, etc.) and are not standardised. The Linux bindings
+ * below are set to &none — override them in your keymap to match your DE.
+ */
+
+#include <dt-bindings/zmk/keys.h>
+
+/ {
+    behaviors {
+
+        /* ── Navigation ─────────────────────────────────────────────── */
+
+        ok_prev_word: os_key_prev_word {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                  Win            Mac            Lin  */
+            bindings = <&kp LC(LEFT)>, <&kp LA(LEFT)>, <&kp LC(LEFT)>;
+        };
+
+        ok_next_word: os_key_next_word {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                  Win             Mac             Lin  */
+            bindings = <&kp LC(RIGHT)>, <&kp LA(RIGHT)>, <&kp LC(RIGHT)>;
+        };
+
+        ok_line_start: os_key_line_start {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*              Win          Mac             Lin  */
+            bindings = <&kp HOME>, <&kp LG(LEFT)>, <&kp HOME>;
+        };
+
+        ok_line_end: os_key_line_end {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*             Win           Mac              Lin  */
+            bindings = <&kp END>, <&kp LG(RIGHT)>, <&kp END>;
+        };
+
+        ok_doc_start: os_key_doc_start {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                Win           Mac          Lin  */
+            bindings = <&kp LC(HOME)>, <&kp LG(UP)>, <&kp LC(HOME)>;
+        };
+
+        ok_doc_end: os_key_doc_end {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*               Win             Mac            Lin  */
+            bindings = <&kp LC(END)>, <&kp LG(DOWN)>, <&kp LC(END)>;
+        };
+
+        /* ── Selection (Shift + Navigation) ─────────────────────────── */
+
+        ok_sel_prev_word: os_key_sel_prev_word {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                       Win                   Mac                   Lin  */
+            bindings = <&kp LS(LC(LEFT))>, <&kp LS(LA(LEFT))>, <&kp LS(LC(LEFT))>;
+        };
+
+        ok_sel_next_word: os_key_sel_next_word {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                        Win                    Mac                    Lin  */
+            bindings = <&kp LS(LC(RIGHT))>, <&kp LS(LA(RIGHT))>, <&kp LS(LC(RIGHT))>;
+        };
+
+        ok_sel_line_start: os_key_sel_line_start {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                   Win              Mac                Lin  */
+            bindings = <&kp LS(HOME)>, <&kp LS(LG(LEFT))>, <&kp LS(HOME)>;
+        };
+
+        ok_sel_line_end: os_key_sel_line_end {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                  Win             Mac                 Lin  */
+            bindings = <&kp LS(END)>, <&kp LS(LG(RIGHT))>, <&kp LS(END)>;
+        };
+
+        ok_sel_doc_start: os_key_sel_doc_start {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                     Win                Mac               Lin  */
+            bindings = <&kp LS(LC(HOME))>, <&kp LS(LG(UP))>, <&kp LS(LC(HOME))>;
+        };
+
+        ok_sel_doc_end: os_key_sel_doc_end {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                    Win                 Mac                Lin  */
+            bindings = <&kp LS(LC(END))>, <&kp LS(LG(DOWN))>, <&kp LS(LC(END))>;
+        };
+
+        /* ── Window management ───────────────────────────────────────── */
+        /* Linux shortcuts are DE-specific; override in your keymap.     */
+
+        ok_mission_ctrl: os_key_mission_control {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*                 Win            Mac          Lin (DE-specific) */
+            bindings = <&kp LG(TAB)>, <&kp LC(UP)>, <&none>;
+        };
+
+        ok_desktop: os_key_desktop {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*              Win           Mac             Lin (DE-specific) */
+            bindings = <&kp LG(D)>, <&kp LG(LC(D))>, <&none>;
+        };
+
+        ok_lock: os_key_lock {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*               Win           Mac              Lin (GNOME/KDE/Cinnamon default) */
+            bindings = <&kp LG(L)>, <&kp LG(LC(Q))>, <&kp LC(LA(L))>;
+        };
+
+    };
+};
