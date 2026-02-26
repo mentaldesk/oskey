@@ -1,0 +1,9 @@
+#include "behavior_keymap.dtsi"
+
+/* Press/release hold_fn_test (row=0, col=0). */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+    >;
+};

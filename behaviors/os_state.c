@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 mentaldesk
+ * Copyright (c) 2026 mentaldesk
  * SPDX-License-Identifier: MIT
  */
 

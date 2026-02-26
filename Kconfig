@@ -1,5 +1,6 @@
 DT_COMPAT_ZMK_BEHAVIOR_OS_SELECTOR := zmk,behavior-os-selector
 DT_COMPAT_ZMK_BEHAVIOR_OS_KEY := zmk,behavior-os-key
+DT_COMPAT_ZMK_BEHAVIOR_HOLD_FN := zmk,behavior-hold-fn
 
 config ZMK_BEHAVIOR_OS_SELECTOR
     bool
@@ -8,6 +9,10 @@ config ZMK_BEHAVIOR_OS_SELECTOR
 config ZMK_BEHAVIOR_OS_KEY
     bool
     default $(dt_compat_enabled,$(DT_COMPAT_ZMK_BEHAVIOR_OS_KEY))
+
+config ZMK_BEHAVIOR_HOLD_FN
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_BEHAVIOR_HOLD_FN))
 
 config ZMK_OSKEY_STATE
     bool

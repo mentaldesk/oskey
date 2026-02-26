@@ -1,0 +1,15 @@
+#include "behavior_keymap.dtsi"
+
+/*
+ * 1. Select macOS (row=0, col=1).
+ * 2. Press os_hold_fn_test (row=1, col=0) — mac binding fires hold_fn_test,
+ *    which should send GLOBE+Ctrl+Left.
+ */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,10)
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+    >;
+};
