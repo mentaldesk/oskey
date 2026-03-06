@@ -26,6 +26,7 @@ exec docker run --rm \
     -e ZMK_TESTS_AUTO_ACCEPT \
     zmkfirmware/zmk-build-arm:4.1 \
     bash -c '
+        git config --global --add safe.directory "*"
         set -e
         cd /workspace/tests
         cmake -P /workspace/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
