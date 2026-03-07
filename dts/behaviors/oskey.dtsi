@@ -278,6 +278,13 @@
             bindings = <&kp LA(TAB)>, <&kp LG(TAB)>, <&kp LA(TAB)>;
         };
 
+        ok_prev_app: os_key_prev_app {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*            Win           Mac           Lin  */
+            bindings = <&kp LS(LA(TAB))>, <&kp LS(LG(TAB))>, <&kp LS(LA(TAB))>;
+        };
+
         ok_next_tab: os_key_next_tab {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
