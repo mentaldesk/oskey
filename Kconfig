@@ -1,5 +1,6 @@
 DT_COMPAT_ZMK_BEHAVIOR_OS_SELECTOR := zmk,behavior-os-selector
 DT_COMPAT_ZMK_BEHAVIOR_OS_KEY := zmk,behavior-os-key
+DT_COMPAT_ZMK_BEHAVIOR_OS_LAYER_MOD := zmk,behavior-os-layer-mod
 
 config ZMK_BEHAVIOR_OS_SELECTOR
     bool
@@ -9,9 +10,13 @@ config ZMK_BEHAVIOR_OS_KEY
     bool
     default $(dt_compat_enabled,$(DT_COMPAT_ZMK_BEHAVIOR_OS_KEY))
 
+config ZMK_BEHAVIOR_OS_LAYER_MOD
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_BEHAVIOR_OS_LAYER_MOD))
+
 config ZMK_OSKEY_STATE
     bool
-    default y if ZMK_BEHAVIOR_OS_SELECTOR || ZMK_BEHAVIOR_OS_KEY
+    default y if ZMK_BEHAVIOR_OS_SELECTOR || ZMK_BEHAVIOR_OS_KEY || ZMK_BEHAVIOR_OS_LAYER_MOD
 
 choice ZMK_OSKEY_DEFAULT_OS
     prompt "Default OS"

@@ -11,9 +11,10 @@ fi
 
 docker run --rm \
     -v "$SCRIPT_DIR:/workspace" \
-    zmkfirmware/zmk-build-arm:4.1 \
+    zmkfirmware/zmk-build-arm:3.5 \
     bash -c '
+        git config --global --add safe.directory "*"
         cd /workspace
         [ -f tests/.west/config ] || west init -l tests/manifest/
-        [ -d tests/zmk ] || (cd tests && west update)
+        cd tests && west update
     '

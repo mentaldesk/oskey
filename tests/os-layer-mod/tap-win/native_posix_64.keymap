@@ -1,0 +1,9 @@
+#include "../behavior_keymap.dtsi"
+
+/* Default OS is Windows. Tap (1,1) quickly — should emit G, no modifier. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

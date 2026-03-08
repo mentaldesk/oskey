@@ -1,0 +1,56 @@
+description: |
+  OS Layer Mod Behavior
+
+  A hold-tap behavior designed for OS-agnostic app switching.
+
+  Hold: activates the specified layer AND holds an OS-specific modifier key
+  (configured via the `bindings` property), keeping the OS switcher menu open
+  for as long as the key is physically held.
+
+  Tap: sends a regular keycode (the key's normal function).
+
+  On release: deactivates the layer and releases the modifier, which
+  confirms the app selection and dismisses the OS switcher menu.
+
+  The `bindings` property takes exactly three entries (Windows, macOS, Linux)
+  specifying which modifier to hold for each OS. The default `&ok_ltm` instance
+  in `oskey.dtsi` uses Left Alt on Windows/Linux and Left GUI (Command) on macOS,
+  matching the standard app-switcher modifier for each OS. Override `bindings`
+  in your keymap if you need different modifiers.
+
+  Example — hold for app-switch layer, tap for G, with custom modifiers:
+
+    my_ltm: os_layer_mod {
+        compatible = "zmk,behavior-os-layer-mod";
+        #binding-cells = <2>;
+        tapping-term-ms = <200>;
+        /*             Win         Mac         Lin  */
+        bindings = <&kp LALT>, <&kp LGUI>, <&kp LALT>;
+    };
+
+  Then in a keymap layer:
+
+    &my_ltm APP_SWITCH_LAYER G
+
+compatible: "zmk,behavior-os-layer-mod"
+
+include: two_param.yaml
+
+properties:
+  bindings:
+    type: phandle-array
+    required: true
+    description: |
+      Three modifier behavior bindings in order: Windows, macOS, Linux.
+      The selected binding will be held for the duration of the layer activation.
+
+      Example (default app-switch modifiers):
+        bindings = <&kp LALT>, <&kp LGUI>, <&kp LALT>;
+
+  tapping-term-ms:
+    type: int
+    required: true
+    description: |
+      Milliseconds between key-down and the hold decision.
+      Releasing before this threshold sends the tap keycode.
+      Holding past it activates the layer and holds the modifier.

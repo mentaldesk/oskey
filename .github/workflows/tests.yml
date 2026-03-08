@@ -16,6 +16,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
+            tests/.west/
             tests/zephyr/
             tests/zmk/
             tests/modules/
