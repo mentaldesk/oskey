@@ -62,7 +62,7 @@ Tests live under `tests/os-layer-mod/` and `tests/oskey/`, mirroring the ZMK tes
 **Structure of each test case:**
 ```
 tests/<suite>/<test-name>/
-    native_sim.keymap     — keymap overlay + kscan mock events
+    native_posix_64.keymap — keymap overlay + kscan mock events
     keycode_events.snapshot — expected output (one line per HID event)
     events.patterns       — sed script to filter raw log to relevant lines
 ```
