@@ -25,7 +25,7 @@
         default_layer {
             bindings = <
                 &os_sel OS_WIN  &os_sel OS_MAC
-                &os_sel OS_LIN  &ok_ltm_test 1 G
+                &kp W           &ok_ltm_test 1 G
             >;
         };
 

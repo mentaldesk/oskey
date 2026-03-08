@@ -54,3 +54,13 @@ properties:
       Milliseconds between key-down and the hold decision.
       Releasing before this threshold sends the tap keycode.
       Holding past it activates the layer and holds the modifier.
+
+  require-prior-idle-ms:
+    type: int
+    default: 0
+    description: |
+      Minimum idle time (ms) required before a hold decision can be made.
+      If another (non-modifier) key was tapped within this many milliseconds
+      before this key was pressed, the hold timer is skipped and the key is
+      treated as a tap immediately.
+      Set to 0 (default) to disable.

@@ -19,20 +19,43 @@
 
 #include <zmk/behavior.h>
 #include <zmk/keymap.h>
+#include <zmk/keys.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
 #include <oskey/os_state.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+/* ── Last-tapped tracking (for require-prior-idle-ms) ───────────────── */
+
+/* Set to a large negative value so the first keypress always passes the
+ * idle check regardless of how require_prior_idle_ms is configured. */
+static int64_t last_tapped_timestamp = INT32_MIN;
+
+static void store_last_tapped(int64_t timestamp) {
+    if (timestamp > last_tapped_timestamp) {
+        last_tapped_timestamp = timestamp;
+    }
+}
+
 /* ── Configuration ───────────────────────────────────────────────────── */
 
 struct behavior_os_layer_mod_config {
     int tapping_term_ms;
+    int require_prior_idle_ms;
     struct zmk_behavior_binding win_mod; /* modifier binding for Windows */
     struct zmk_behavior_binding mac_mod; /* modifier binding for macOS   */
     struct zmk_behavior_binding lin_mod; /* modifier binding for Linux   */
 };
+
+/* Returns true if enough idle time has elapsed (or the feature is disabled). */
+static bool prior_idle_elapsed(const struct behavior_os_layer_mod_config *cfg,
+                               int64_t press_timestamp) {
+    if (cfg->require_prior_idle_ms <= 0) {
+        return true;
+    }
+    return (last_tapped_timestamp + cfg->require_prior_idle_ms) <= press_timestamp;
+}
 
 /* ── Per-press state ─────────────────────────────────────────────────── */
 
@@ -144,7 +167,13 @@ static int on_os_layer_mod_binding_pressed(struct zmk_behavior_binding *binding,
     }
 
     k_work_init_delayable(&olm->work, os_layer_mod_work_handler);
-    k_work_schedule(&olm->work, K_MSEC(cfg->tapping_term_ms));
+
+    /* If a key was tapped too recently, skip the hold timer and treat this
+     * press as a tap immediately. The OLM_UNDECIDED release path handles it
+     * correctly: k_work_cancel_delayable is a no-op on unscheduled work. */
+    if (prior_idle_elapsed(cfg, event.timestamp)) {
+        k_work_schedule(&olm->work, K_MSEC(cfg->tapping_term_ms));
+    }
 
     return ZMK_BEHAVIOR_OPAQUE;
 }
@@ -174,6 +203,19 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
+/* ── Last-tapped listener ───────────────────────────────────────────── */
+
+static int behavior_os_layer_mod_keycode_listener(const zmk_event_t *eh) {
+    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
+    if (ev && ev->state && !is_mod(ev->usage_page, ev->keycode)) {
+        store_last_tapped(ev->timestamp);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(behavior_os_layer_mod, behavior_os_layer_mod_keycode_listener);
+ZMK_SUBSCRIPTION(behavior_os_layer_mod, zmk_keycode_state_changed);
+
 /* ── Driver wiring ───────────────────────────────────────────────────── */
 
 static const struct behavior_driver_api behavior_os_layer_mod_driver_api = {
@@ -194,10 +236,11 @@ static int behavior_os_layer_mod_init(const struct device *dev) { return 0; }
 
 #define OS_LAYER_MOD_INST(n)                                                                       \
     static const struct behavior_os_layer_mod_config behavior_os_layer_mod_config_##n = {          \
-        .tapping_term_ms = DT_INST_PROP(n, tapping_term_ms),                                       \
-        .win_mod         = _OLM_MOD_BINDING(n, 0),                                                 \
-        .mac_mod         = _OLM_MOD_BINDING(n, 1),                                                 \
-        .lin_mod         = _OLM_MOD_BINDING(n, 2),                                                 \
+        .tapping_term_ms      = DT_INST_PROP(n, tapping_term_ms),                                  \
+        .require_prior_idle_ms = DT_INST_PROP(n, require_prior_idle_ms),                            \
+        .win_mod               = _OLM_MOD_BINDING(n, 0),                                                 \
+        .mac_mod               = _OLM_MOD_BINDING(n, 1),                                           \
+        .lin_mod               = _OLM_MOD_BINDING(n, 2),                                                 \
     };                                                                                             \
     BEHAVIOR_DT_INST_DEFINE(n, behavior_os_layer_mod_init, NULL, NULL,                             \
                             &behavior_os_layer_mod_config_##n, POST_KERNEL,                        \
