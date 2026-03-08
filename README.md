@@ -16,7 +16,24 @@ Stores the desired OS so that `os-key` behaviors dispatch to the correct binding
 
 ### `os-key` — OS-dispatched key binding
 
-Holds three bindings (Windows, macOS, Linux). Whichever OS is currently selected determines which binding fires on press/release.ks
+Holds three bindings (Windows, macOS, Linux). Whichever OS is currently selected determines which binding fires on press/release.
+
+### `os-layer-mod` — hold-tap for OS-agnostic app switching
+
+A hold-tap behavior that, when held past the `tapping-term-ms` threshold:
+- Activates a specified layer, and
+- Holds an OS-appropriate modifier key (configured via `bindings`)
+
+Releasing the key deactivates the layer and releases the modifier, confirming the selection.
+When tapped quickly it sends a regular keycode instead.
+
+The built-in `&ok_ltm` instance (from `oskey.dtsi`) defaults to Left Alt on Windows/Linux and Left GUI (Command) on macOS. You can override the `bindings` property for different modifiers.
+
+Example usage in a keymap (hold = app-switch layer with OS modifier, tap = `G`):
+
+```c
+&ok_ltm APP_SWITCH_LAYER G
+```
 
 ---
 
@@ -173,25 +190,79 @@ Then use `&bt_win`, `&bt_mac`, and `&bt_lin` in your keymap instead of the bare 
 
 ## Built-in Common Behaviors
 
-oskey ships a ready-made set of OS-agnostic behaviors:
+oskey ships a ready-made set of OS-agnostic behaviors in `behaviors/oskey.dtsi`.
+Include it in your keymap with `#include <behaviors/oskey.dtsi>`.
 
-| Label               | Action                          | Win                | Mac                | Lin                |
-|---------------------|---------------------------------|--------------------|--------------------|--------------------|
-| `&ok_prev_word`     | Move cursor back one word       | `Ctrl+Left`        | `Option+Left`      | `Ctrl+Left`        |
-| `&ok_next_word`     | Move cursor forward one word    | `Ctrl+Right`       | `Option+Right`     | `Ctrl+Right`       |
-| `&ok_line_start`    | Beginning of line               | `Home`             | `Cmd+Left`         | `Home`             |
-| `&ok_line_end`      | End of line                     | `End`              | `Cmd+Right`        | `End`              |
-| `&ok_doc_start`     | Beginning of document           | `Ctrl+Home`        | `Cmd+Up`           | `Ctrl+Home`        |
-| `&ok_doc_end`       | End of document                 | `Ctrl+End`         | `Cmd+Down`         | `Ctrl+End`         |
-| `&ok_sel_prev_word` | Select back one word            | `Shift+Ctrl+Left`  | `Shift+Option+Left`  | `Shift+Ctrl+Left`  |
-| `&ok_sel_next_word` | Select forward one word         | `Shift+Ctrl+Right` | `Shift+Option+Right` | `Shift+Ctrl+Right` |
-| `&ok_sel_line_start`| Select to beginning of line     | `Shift+Home`       | `Shift+Cmd+Left`   | `Shift+Home`       |
-| `&ok_sel_line_end`  | Select to end of line           | `Shift+End`        | `Shift+Cmd+Right`  | `Shift+End`        |
-| `&ok_sel_doc_start` | Select to beginning of document | `Shift+Ctrl+Home`  | `Shift+Cmd+Up`     | `Shift+Ctrl+Home`  |
-| `&ok_sel_doc_end`   | Select to end of document       | `Shift+Ctrl+End`   | `Shift+Cmd+Down`   | `Shift+Ctrl+End`   |
-| `&ok_maximize`      | Maximize window                 | `Win+Up`           | `Fn/Globe+Ctrl+F`  | `Super+Up`         |
-| `&ok_tile_left`     | Tile window left                | `Win+Left`         | `Fn/Globe+Ctrl+Left` | `Super+Left`     |
-| `&ok_tile_right`    | Tile window right               | `Win+Right`        | `Fn/Globe+Ctrl+Right` | `Super+Right`   |
+### Commands
+
+| Label               | Action              | Win              | Mac              | Lin              |
+|---------------------|---------------------|------------------|------------------|------------------|
+| `&ok_cut`           | Cut                 | `Ctrl+X`         | `Cmd+X`          | `Ctrl+X`         |
+| `&ok_copy`          | Copy                | `Ctrl+C`         | `Cmd+C`          | `Ctrl+C`         |
+| `&ok_paste`         | Paste               | `Ctrl+V`         | `Cmd+V`          | `Ctrl+V`         |
+| `&ok_undo`          | Undo                | `Ctrl+Z`         | `Cmd+Z`          | `Ctrl+Z`         |
+| `&ok_redo`          | Redo                | `Ctrl+Y`         | `Cmd+Shift+Z`    | `Ctrl+Shift+Z`   |
+| `&ok_sel_all`       | Select All          | `Ctrl+A`         | `Cmd+A`          | `Ctrl+A`         |
+| `&ok_find`          | Find                | `Ctrl+F`         | `Cmd+F`          | `Ctrl+F`         |
+| `&ok_find_replace`  | Find & Replace      | `Ctrl+H`         | `Cmd+H`          | `Ctrl+H`         |
+| `&ok_bold`          | Bold                | `Ctrl+B`         | `Cmd+B`          | `Ctrl+B`         |
+| `&ok_italic`        | Italic              | `Ctrl+I`         | `Cmd+I`          | `Ctrl+I`         |
+| `&ok_underline`     | Underline           | `Ctrl+U`         | `Cmd+U`          | `Ctrl+U`         |
+| `&ok_new_win`       | New window          | `Ctrl+N`         | `Cmd+N`          | `Ctrl+N`         |
+| `&ok_new_tab`       | New tab             | `Ctrl+T`         | `Cmd+T`          | `Ctrl+T`         |
+| `&ok_close`         | Close tab/window    | `Ctrl+W`         | `Cmd+W`          | `Ctrl+W`         |
+| `&ok_reopen_tab`    | Reopen closed tab   | `Ctrl+Shift+T`   | `Cmd+Shift+T`    | `Ctrl+Shift+T`   |
+| `&ok_open`          | Open                | `Ctrl+O`         | `Cmd+O`          | `Ctrl+O`         |
+| `&ok_save`          | Save                | `Ctrl+S`         | `Cmd+S`          | `Ctrl+S`         |
+| `&ok_save_as`       | Save As             | `Ctrl+Shift+S`   | `Cmd+Shift+S`    | `Ctrl+Shift+S`   |
+| `&ok_print`         | Print               | `Ctrl+P`         | `Cmd+P`          | `Ctrl+P`         |
+| `&ok_zoom_in`       | Zoom in             | `Ctrl+=`         | `Cmd+=`          | `Ctrl+=`         |
+| `&ok_zoom_out`      | Zoom out            | `Ctrl+-`         | `Cmd+-`          | `Ctrl+-`         |
+| `&ok_zoom_reset`    | Reset zoom          | `Ctrl+0`         | `Cmd+0`          | `Ctrl+0`         |
+
+### Navigation
+
+| Label               | Action                          | Win                | Mac                  | Lin                |
+|---------------------|---------------------------------|--------------------|----------------------|--------------------|
+| `&ok_prev_word`     | Move cursor back one word       | `Ctrl+Left`        | `Option+Left`        | `Ctrl+Left`        |
+| `&ok_next_word`     | Move cursor forward one word    | `Ctrl+Right`       | `Option+Right`       | `Ctrl+Right`       |
+| `&ok_line_start`    | Beginning of line               | `Home`             | `Cmd+Left`           | `Home`             |
+| `&ok_line_end`      | End of line                     | `End`              | `Cmd+Right`          | `End`              |
+| `&ok_doc_start`     | Beginning of document           | `Ctrl+Home`        | `Cmd+Up`             | `Ctrl+Home`        |
+| `&ok_doc_end`       | End of document                 | `Ctrl+End`         | `Cmd+Down`           | `Ctrl+End`         |
+
+### Selection
+
+| Label                | Action                          | Win                  | Mac                    | Lin                  |
+|----------------------|---------------------------------|----------------------|------------------------|----------------------|
+| `&ok_sel_prev_word`  | Select back one word            | `Shift+Ctrl+Left`    | `Shift+Option+Left`    | `Shift+Ctrl+Left`    |
+| `&ok_sel_next_word`  | Select forward one word         | `Shift+Ctrl+Right`   | `Shift+Option+Right`   | `Shift+Ctrl+Right`   |
+| `&ok_sel_line_start` | Select to beginning of line     | `Shift+Home`         | `Shift+Cmd+Left`       | `Shift+Home`         |
+| `&ok_sel_line_end`   | Select to end of line           | `Shift+End`          | `Shift+Cmd+Right`      | `Shift+End`          |
+| `&ok_sel_doc_start`  | Select to beginning of document | `Shift+Ctrl+Home`    | `Shift+Cmd+Up`         | `Shift+Ctrl+Home`    |
+| `&ok_sel_doc_end`    | Select to end of document       | `Shift+Ctrl+End`     | `Shift+Cmd+Down`       | `Shift+Ctrl+End`     |
+
+### Window Management
+
+Linux window-management shortcuts are desktop-environment specific and have no universal standard. The Linux binding for DE-specific actions is `&none` by default — override it in your keymap for your DE.
+
+| Label               | Action                           | Win                  | Mac              | Lin              |
+|---------------------|----------------------------------|----------------------|------------------|------------------|
+| `&ok_ltm`           | App-switch layer mod (hold-tap)¹ | hold `LAlt`          | hold `Cmd`       | hold `LAlt`      |
+| `&ok_next_app`      | Next app                         | `Alt+Tab`            | `Cmd+Tab`        | `Alt+Tab`        |
+| `&ok_prev_app`      | Previous app                     | `Alt+Shift+Tab`      | `Cmd+Shift+Tab`  | `Alt+Shift+Tab`  |
+| `&ok_next_tab`      | Next tab                         | `Ctrl+}`             | `Cmd+}`          | `Ctrl+}`         |
+| `&ok_prev_tab`      | Previous tab                     | `Ctrl+{`             | `Cmd+{`          | `Ctrl+{`         |
+| `&ok_mission_ctrl`  | Show all windows / task overview | `Win+Tab`            | `Ctrl+Up`        | `none` ²         |
+| `&ok_desktop`       | Show desktop                     | `Win+D`              | `Ctrl+Cmd+D`     | `none` ²         |
+| `&ok_lock`          | Lock the computer                | `Win+L`              | `Ctrl+Cmd+Q`     | `Ctrl+Alt+L` ³   |
+| `&ok_force_quit`    | Force quit / task manager        | `Ctrl+Shift+Esc`     | `Opt+Cmd+Esc`    | `Ctrl+Esc`       |
+
+¹ `&ok_ltm LAYER keycode` — hold activates `LAYER` and keeps the OS app-switch modifier held; tap sends `keycode`. See [`os-layer-mod`](#os-layer-mod--hold-tap-for-os-agnostic-app-switching).
+
+² Linux window-management shortcuts are desktop-environment specific. The Linux binding is `&none` by default — override in your keymap for your DE.
+
+³ Default for GNOME, KDE, and Cinnamon.
 | `&ok_mission_ctrl`  | Show all windows / task overview | `Win+Tab`         | `Ctrl+Up`          | `none` ¹           |
 | `&ok_desktop`       | Show desktop                    | `Win+D`            | `Ctrl+Cmd+D`       | `none` ¹           |
 | `&ok_lock`          | Lock the computer               | `Win+L`            | `Ctrl+Cmd+Q`       | `Ctrl+Alt+L` ²     |

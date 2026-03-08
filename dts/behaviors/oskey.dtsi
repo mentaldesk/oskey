@@ -271,6 +271,24 @@
         /* ── Window management ───────────────────────────────────────── */
         /* Linux shortcuts are DE-specific; override in your keymap.     */
 
+        ok_ltm: os_layer_mod {
+            compatible = "zmk,behavior-os-layer-mod";
+            #binding-cells = <2>;
+            /*
+             * Hold: activates <layer> and holds the OS app-switch modifier,
+             *   keeping the switcher menu open while held.
+             * Tap: sends <keycode> normally.
+             * Release: dismisses the switcher menu and deactivates the layer.
+             *
+             * Usage:  &ok_ltm APP_SWITCH_LAYER G
+             *
+             * Override mods in your keymap to use different modifiers.
+             */
+            tapping-term-ms = <200>;
+            /*              Win           Mac           Lin  */
+            bindings = <&kp LALT>, <&kp LGUI>, <&kp LALT>;
+        };
+
         ok_next_app: os_key_next_app {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;

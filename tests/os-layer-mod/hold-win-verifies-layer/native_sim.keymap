@@ -1,0 +1,14 @@
+#include "../behavior_keymap.dtsi"
+
+/* Default OS is Windows. Hold (1,1) past the tapping term to activate layer 1
+ * with Left Alt held. Then press (0,0) — which is &kp T on layer 1 — to verify
+ * the layer is genuinely active. Releasing (1,1) deactivates the layer and
+ * releases Left Alt. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,300)
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

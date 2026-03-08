@@ -1,0 +1,44 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+#include <dt-bindings/zmk/oskey.h>
+
+/ {
+    behaviors {
+        os_sel: os_selector {
+            compatible = "zmk,behavior-os-selector";
+            #binding-cells = <1>;
+        };
+
+        ok_ltm_test: os_layer_mod_test {
+            compatible = "zmk,behavior-os-layer-mod";
+            #binding-cells = <2>;
+            tapping-term-ms = <200>;
+            /*              Win           Mac           Lin  */
+            bindings = <&kp LALT>, <&kp LGUI>, <&kp LALT>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &os_sel OS_WIN  &os_sel OS_MAC
+                &os_sel OS_LIN  &ok_ltm_test 1 G
+            >;
+        };
+
+        /*
+         * Layer 1: the app-switch layer activated by ok_ltm_test's hold.
+         * (0,0) is &kp T so we can verify the layer is truly active by
+         * pressing that position while ok_ltm_test is held.
+         */
+        app_switch_layer {
+            bindings = <
+                &kp T    &trans
+                &trans   &trans
+            >;
+        };
+    };
+};

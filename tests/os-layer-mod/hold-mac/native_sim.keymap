@@ -1,0 +1,12 @@
+#include "../behavior_keymap.dtsi"
+
+/* Select macOS (0,1), then hold (1,1) past the tapping term — should hold
+ * Left GUI (Command, the macOS app-switch modifier) instead of Left Alt. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,10)
+        ZMK_MOCK_PRESS(1,1,300)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

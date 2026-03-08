@@ -1,0 +1,11 @@
+#include "../behavior_keymap.dtsi"
+
+/* Default OS is Windows. Hold (1,1) past the tapping term — should hold
+ * Left Alt (Windows app-switch modifier) and activate layer 1, then release
+ * Left Alt when the key is released. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,300)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};
