@@ -214,6 +214,25 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
     }
 
     if (olm->state == OLM_UNDECIDED || olm->state == OLM_TAP) {
+        /* For the balanced flavor, if another key was pressed (and not yet
+         * released) while this key was held, resolve as a hold rather than
+         * a tap even if we release before the interrupt key goes up. This
+         * mirrors ZMK hold-tap's capture/replay mechanism for the rollover
+         * case: press Y, press T (still down), release Y → hold fires. */
+        if (olm->state == OLM_UNDECIDED &&
+            olm->config->flavor == OLM_FLAVOR_BALANCED &&
+            olm->interrupt_key_down) {
+            k_work_cancel_delayable(&olm->work);
+            do_hold(olm);
+            /* Immediately release too — the interrupt key is still held so
+             * the host sees the modifier and layer activate/deactivate in
+             * the same release event, which is correct for rollover. */
+            zmk_keymap_layer_deactivate(olm->layer);
+            zmk_behavior_invoke_binding(&olm->mod_binding, event, false);
+            olm->active = false;
+            return ZMK_BEHAVIOR_OPAQUE;
+        }
+
         /* Tap: either released before timer fired, or timer resolved as
          * tap (tap-unless-interrupted). Cancel work in case it is still
          * pending (no-op if the timer already ran). */
