@@ -1,0 +1,19 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to tap-unless-interrupted. */
+&ok_ltm_test {
+    flavor = "tap-unless-interrupted";
+};
+
+/* Default OS = Windows. Press W (1,0) while (1,1) is undecided (50 ms).
+ * tap-unless-interrupted fires the hold immediately on the other-key DOWN,
+ * identical to hold-preferred for this case. Left Alt is held, then
+ * released when (1,1) is released. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

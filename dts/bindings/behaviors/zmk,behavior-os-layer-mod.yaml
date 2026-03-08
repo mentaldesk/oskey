@@ -64,3 +64,24 @@ properties:
       before this key was pressed, the hold timer is skipped and the key is
       treated as a tap immediately.
       Set to 0 (default) to disable.
+
+  flavor:
+    type: string
+    default: "tap-preferred"
+    description: |
+      How to treat other key-presses that occur while this key is held but
+      before the tapping-term-ms has elapsed ("interrupts").
+
+        hold-preferred        — an interrupt key-press immediately resolves
+                                the hold.
+        balanced              — an interrupt key-press AND release resolves
+                                the hold.
+        tap-preferred         — interrupts are ignored; only the timer
+                                resolves the hold (default).
+        tap-unless-interrupted — an interrupt key-press resolves the hold;
+                                the timer resolves a tap.
+    enum:
+      - "hold-preferred"
+      - "balanced"
+      - "tap-preferred"
+      - "tap-unless-interrupted"

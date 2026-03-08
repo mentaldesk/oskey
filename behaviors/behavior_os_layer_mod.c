@@ -22,6 +22,7 @@
 #include <zmk/keys.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/keycode_state_changed.h>
+#include <zmk/events/position_state_changed.h>
 #include <oskey/os_state.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -40,9 +41,17 @@ static void store_last_tapped(int64_t timestamp) {
 
 /* ── Configuration ───────────────────────────────────────────────────── */
 
+enum olm_flavor {
+    OLM_FLAVOR_HOLD_PREFERRED,       /* hold on other-key-down OR timer   */
+    OLM_FLAVOR_BALANCED,             /* hold on other-key-up  OR timer    */
+    OLM_FLAVOR_TAP_PREFERRED,        /* hold on timer only (default)      */
+    OLM_FLAVOR_TAP_UNLESS_INTERRUPTED, /* hold on other-key-down; tap on timer */
+};
+
 struct behavior_os_layer_mod_config {
     int tapping_term_ms;
     int require_prior_idle_ms;
+    enum olm_flavor flavor;
     struct zmk_behavior_binding win_mod; /* modifier binding for Windows */
     struct zmk_behavior_binding mac_mod; /* modifier binding for macOS   */
     struct zmk_behavior_binding lin_mod; /* modifier binding for Linux   */
@@ -60,9 +69,9 @@ static bool prior_idle_elapsed(const struct behavior_os_layer_mod_config *cfg,
 /* ── Per-press state ─────────────────────────────────────────────────── */
 
 enum os_layer_mod_state {
-    OLM_UNDECIDED, /* timer still running; not yet decided    */
-    OLM_TAP,       /* released before timer; tap emitted      */
-    OLM_HOLD,      /* timer fired; layer + modifier active    */
+    OLM_UNDECIDED, /* timer running; not yet decided                          */
+    OLM_TAP,       /* resolved as tap (pre-timer release or timer on tap-u-i) */
+    OLM_HOLD,      /* resolved as hold; layer + modifier active               */
 };
 
 #define ZMK_BHV_MAX_ACTIVE_OS_LAYER_MODS 10
@@ -75,11 +84,16 @@ struct active_os_layer_mod {
     uint32_t tap_keycode;                    /* param2: keycode to emit on tap           */
     struct zmk_behavior_binding mod_binding; /* OS modifier captured at press time       */
     enum os_layer_mod_state state;
+    bool interrupt_key_down;                 /* balanced: another key was pressed down   */
     const struct behavior_os_layer_mod_config *config;
     struct k_work_delayable work;
 };
 
 static struct active_os_layer_mod active_os_layer_mods[ZMK_BHV_MAX_ACTIVE_OS_LAYER_MODS];
+
+/* Points to the active slot that is still undecided, so the position
+ * listener can react to interrupt keys without scanning the full array. */
+static struct active_os_layer_mod *undecided_olm = NULL;
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 
@@ -117,9 +131,11 @@ alloc_active(uint32_t position, int64_t press_timestamp, uint32_t layer, uint32_
             olm->press_timestamp = press_timestamp;
             olm->layer           = layer;
             olm->tap_keycode     = tap_keycode;
-            olm->mod_binding     = *mod_binding;
-            olm->state           = OLM_UNDECIDED;
-            olm->config          = cfg;
+            olm->mod_binding         = *mod_binding;
+            olm->state               = OLM_UNDECIDED;
+            olm->interrupt_key_down  = false;
+            olm->config              = cfg;
+            undecided_olm            = olm;
             return olm;
         }
     }
@@ -130,6 +146,9 @@ alloc_active(uint32_t position, int64_t press_timestamp, uint32_t layer, uint32_
 
 static void do_hold(struct active_os_layer_mod *olm) {
     olm->state = OLM_HOLD;
+    if (undecided_olm == olm) {
+        undecided_olm = NULL;
+    }
     struct zmk_behavior_binding_event mod_event = {
         .position  = olm->position,
         .timestamp = k_uptime_get(),
@@ -145,7 +164,15 @@ static void os_layer_mod_work_handler(struct k_work *work) {
     struct active_os_layer_mod *olm = CONTAINER_OF(dwork, struct active_os_layer_mod, work);
 
     if (olm->active && olm->state == OLM_UNDECIDED) {
-        do_hold(olm);
+        if (olm->config->flavor == OLM_FLAVOR_TAP_UNLESS_INTERRUPTED) {
+            /* Timer expired: for this flavor the timer means a tap. */
+            olm->state = OLM_TAP;
+            if (undecided_olm == olm) {
+                undecided_olm = NULL;
+            }
+        } else {
+            do_hold(olm);
+        }
     }
 }
 
@@ -186,10 +213,14 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
         return ZMK_BEHAVIOR_OPAQUE;
     }
 
-    if (olm->state == OLM_UNDECIDED) {
-        /* Released before the timer fired — it's a tap. */
+    if (olm->state == OLM_UNDECIDED || olm->state == OLM_TAP) {
+        /* Tap: either released before timer fired, or timer resolved as
+         * tap (tap-unless-interrupted). Cancel work in case it is still
+         * pending (no-op if the timer already ran). */
         k_work_cancel_delayable(&olm->work);
-        olm->state = OLM_TAP;
+        if (undecided_olm == olm) {
+            undecided_olm = NULL;
+        }
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, true,  event.timestamp);
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, false, event.timestamp);
     } else if (olm->state == OLM_HOLD) {
@@ -203,17 +234,57 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
-/* ── Last-tapped listener ───────────────────────────────────────────── */
+/* ── Position-interrupt handler ─────────────────────────────────────── */
 
-static int behavior_os_layer_mod_keycode_listener(const zmk_event_t *eh) {
-    const struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
-    if (ev && ev->state && !is_mod(ev->usage_page, ev->keycode)) {
-        store_last_tapped(ev->timestamp);
+static void handle_interrupt(struct active_os_layer_mod *olm,
+                             const struct zmk_position_state_changed *ev) {
+    switch (olm->config->flavor) {
+    case OLM_FLAVOR_HOLD_PREFERRED:
+    case OLM_FLAVOR_TAP_UNLESS_INTERRUPTED:
+        /* Both flavors trigger a hold the moment another key is pressed. */
+        if (ev->state) {
+            k_work_cancel_delayable(&olm->work);
+            do_hold(olm);
+        }
+        break;
+    case OLM_FLAVOR_BALANCED:
+        /* Hold only after the interrupting key is both pressed and released. */
+        if (ev->state) {
+            olm->interrupt_key_down = true;
+        } else if (olm->interrupt_key_down) {
+            k_work_cancel_delayable(&olm->work);
+            do_hold(olm);
+        }
+        break;
+    case OLM_FLAVOR_TAP_PREFERRED:
+    default:
+        /* Ignore interrupts; only the timer decides. */
+        break;
+    }
+}
+
+/* ── Combined event listener ─────────────────────────────────────────── */
+
+static int behavior_os_layer_mod_listener(const zmk_event_t *eh) {
+    /* Position events drive the interrupt-flavor logic. */
+    const struct zmk_position_state_changed *pos_ev = as_zmk_position_state_changed(eh);
+    if (pos_ev != NULL) {
+        if (undecided_olm != NULL && pos_ev->position != undecided_olm->position) {
+            handle_interrupt(undecided_olm, pos_ev);
+        }
+        return ZMK_EV_EVENT_BUBBLE;
+    }
+
+    /* Keycode events feed the require-prior-idle-ms tracking. */
+    const struct zmk_keycode_state_changed *key_ev = as_zmk_keycode_state_changed(eh);
+    if (key_ev != NULL && key_ev->state && !is_mod(key_ev->usage_page, key_ev->keycode)) {
+        store_last_tapped(key_ev->timestamp);
     }
     return ZMK_EV_EVENT_BUBBLE;
 }
 
-ZMK_LISTENER(behavior_os_layer_mod, behavior_os_layer_mod_keycode_listener);
+ZMK_LISTENER(behavior_os_layer_mod, behavior_os_layer_mod_listener);
+ZMK_SUBSCRIPTION(behavior_os_layer_mod, zmk_position_state_changed);
 ZMK_SUBSCRIPTION(behavior_os_layer_mod, zmk_keycode_state_changed);
 
 /* ── Driver wiring ───────────────────────────────────────────────────── */
@@ -236,8 +307,9 @@ static int behavior_os_layer_mod_init(const struct device *dev) { return 0; }
 
 #define OS_LAYER_MOD_INST(n)                                                                       \
     static const struct behavior_os_layer_mod_config behavior_os_layer_mod_config_##n = {          \
-        .tapping_term_ms      = DT_INST_PROP(n, tapping_term_ms),                                  \
-        .require_prior_idle_ms = DT_INST_PROP(n, require_prior_idle_ms),                            \
+        .tapping_term_ms       = DT_INST_PROP(n, tapping_term_ms),                                 \
+        .require_prior_idle_ms = DT_INST_PROP(n, require_prior_idle_ms),                           \
+        .flavor                = DT_ENUM_IDX(DT_DRV_INST(n), flavor),                             \
         .win_mod               = _OLM_MOD_BINDING(n, 0),                                                 \
         .mac_mod               = _OLM_MOD_BINDING(n, 1),                                           \
         .lin_mod               = _OLM_MOD_BINDING(n, 2),                                                 \

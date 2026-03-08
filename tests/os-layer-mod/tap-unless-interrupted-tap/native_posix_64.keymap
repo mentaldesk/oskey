@@ -1,0 +1,16 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to tap-unless-interrupted. */
+&ok_ltm_test {
+    flavor = "tap-unless-interrupted";
+};
+
+/* Default OS = Windows. Hold (1,1) past the tapping term (300 ms > 200 ms)
+ * without pressing any other key. For tap-unless-interrupted the timer
+ * resolves as a TAP (not a hold), so G is emitted on release. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,300)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

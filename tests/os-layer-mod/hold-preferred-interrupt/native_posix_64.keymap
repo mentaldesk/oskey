@@ -1,0 +1,19 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to hold-preferred. */
+&ok_ltm_test {
+    flavor = "hold-preferred";
+};
+
+/* Default OS = Windows. Press W (1,0) while (1,1) is undecided with only
+ * 50 ms elapsed (< 200 ms tapping term). hold-preferred fires the hold
+ * immediately on the other-key DOWN, so Left Alt is held before W is
+ * released. Releasing (1,1) deactivates the layer and releases Left Alt. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};
