@@ -1,0 +1,27 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to balanced. */
+&ok_ltm_test {
+    flavor = "balanced";
+};
+
+/* Default OS = Windows. Hold (1,1), then press and release (0,0) as the
+ * interrupt key before the tapping-term expires.
+ *
+ * Position (0,0) is &os_sel OS_WIN on the base layer — it emits NO HID
+ * key codes. On app_switch_layer (layer 1) it is &kp T.
+ *
+ * With correct capture-and-replay, the balanced hold fires on (0,0)-up,
+ * Left Alt is pressed and layer 1 activated BEFORE (0,0) is re-emitted,
+ * so (0,0) resolves to &kp T → T keycode is output while Alt is held.
+ *
+ * Without capture, (0,0) fires immediately on the base layer as &os_sel
+ * (no HID output), then the hold fires too late — T is never seen. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

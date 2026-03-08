@@ -54,3 +54,57 @@ properties:
       Milliseconds between key-down and the hold decision.
       Releasing before this threshold sends the tap keycode.
       Holding past it activates the layer and holds the modifier.
+
+  require-prior-idle-ms:
+    type: int
+    default: 0
+    description: |
+      Minimum idle time (ms) required before a hold decision can be made.
+      If another (non-modifier) key was tapped within this many milliseconds
+      before this key was pressed, the hold timer is skipped and the key is
+      treated as a tap immediately.
+      Set to 0 (default) to disable.
+
+  flavor:
+    type: string
+    default: "tap-preferred"
+    description: |
+      How to treat other key-presses that occur while this key is held but
+      before the tapping-term-ms has elapsed ("interrupts").
+
+      For all flavors except "tap-preferred", interrupt key events are
+      captured and replayed after the hold/tap decision is made. This means
+      the interrupt key is always processed under whichever layer is active
+      at decision time — not the layer that was active when the key was
+      physically pressed.
+
+        hold-preferred         — an interrupt key-press immediately resolves
+                                 the hold. The interrupt key is captured,
+                                 the modifier is pressed and the layer
+                                 activated, then the interrupt key is
+                                 replayed under the now-active layer.
+                                 Recommended for app-switching where you
+                                 want the interrupt key (e.g. T → Tab) to
+                                 be seen by the activated layer.
+
+        balanced               — a hold is resolved only after an interrupt
+                                 key is both pressed AND released while this
+                                 key is still held. Both the key-down and
+                                 key-up events are captured and replayed
+                                 under the activated layer after the hold
+                                 fires on key-up.
+
+        tap-preferred          — interrupts are ignored; only the timer
+                                 resolves the hold (default). No event
+                                 capture occurs — interrupt keys are
+                                 processed immediately on whatever layer is
+                                 currently active.
+
+        tap-unless-interrupted — an interrupt key-press resolves the hold
+                                 (same capture behaviour as hold-preferred);
+                                 the timer expiring resolves a tap instead.
+    enum:
+      - "hold-preferred"
+      - "balanced"
+      - "tap-preferred"
+      - "tap-unless-interrupted"

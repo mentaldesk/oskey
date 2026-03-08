@@ -1,0 +1,19 @@
+#include "../behavior_keymap.dtsi"
+
+/* Enable require-prior-idle-ms on the test behavior instance. */
+&ok_ltm_test {
+    require-prior-idle-ms = <250>;
+};
+
+/* Default OS is Windows. Press W (1,0) to set the last-tapped timestamp,
+ * then immediately hold (1,1) — only 20 ms of idle time has elapsed, which
+ * is less than the 250 ms threshold, so the hold timer is suppressed and
+ * the key resolves as a tap (G). */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+        ZMK_MOCK_PRESS(1,1,300)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};

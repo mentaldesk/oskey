@@ -1,0 +1,19 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to balanced. */
+&ok_ltm_test {
+    flavor = "balanced";
+};
+
+/* Default OS = Windows. Press W (1,0) while (1,1) is undecided (50 ms
+ * elapsed) then release W. balanced fires the hold only on the
+ * interrupt-key UP, so Left Alt is held after W is released.
+ * Releasing (1,1) deactivates the layer and releases Left Alt. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};
