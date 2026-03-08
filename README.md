@@ -263,10 +263,3 @@ Linux window-management shortcuts are desktop-environment specific and have no u
 ² Linux window-management shortcuts are desktop-environment specific. The Linux binding is `&none` by default — override in your keymap for your DE.
 
 ³ Default for GNOME, KDE, and Cinnamon.
-| `&ok_mission_ctrl`  | Show all windows / task overview | `Win+Tab`         | `Ctrl+Up`          | `none` ¹           |
-| `&ok_desktop`       | Show desktop                    | `Win+D`            | `Ctrl+Cmd+D`       | `none` ¹           |
-| `&ok_lock`          | Lock the computer               | `Win+L`            | `Ctrl+Cmd+Q`       | `Ctrl+Alt+L` ²     |
-
-¹ Linux window-management shortcuts are desktop-environment specific (GNOME, KDE, Cinnamon, etc.) and have no universal standard. The Linux binding is `&none` by default — override it in your keymap for your DE.
-
-² `Ctrl+Alt+L` is the default lock shortcut in GNOME, KDE Plasma, and Cinnamon. It may differ on other DEs.
