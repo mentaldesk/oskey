@@ -24,7 +24,7 @@ exec docker run --rm \
     -v "$SCRIPT_DIR:/workspace" \
     -e "ZMK_TEST_PATH=$DOCKER_TEST_PATH" \
     -e ZMK_TESTS_AUTO_ACCEPT \
-    zmkfirmware/zmk-build-arm:4.1 \
+    zmkfirmware/zmk-build-arm:3.5 \
     bash -c '
         git config --global --add safe.directory "*"
         set -e
