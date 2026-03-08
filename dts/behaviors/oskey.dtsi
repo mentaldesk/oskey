@@ -124,6 +124,13 @@
             bindings = <&kp LC(W)>, <&kp LG(W)>, <&kp LC(W)>;
         };
 
+        ok_quit: os_key_quit {
+            compatible = "zmk,behavior-os-key";
+            #binding-cells = <0>;
+            /*             Win            Mac           Lin  */
+            bindings = <&kp LA(F4)>, <&kp LG(Q)>, <&kp LA(F4)>;
+        };
+
         ok_reopen_tab: os_key_reopen_tab {
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
