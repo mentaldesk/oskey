@@ -95,6 +95,38 @@ static struct active_os_layer_mod active_os_layer_mods[ZMK_BHV_MAX_ACTIVE_OS_LAY
  * listener can react to interrupt keys without scanning the full array. */
 static struct active_os_layer_mod *undecided_olm = NULL;
 
+/* Forward declaration required by ZMK_EVENT_RAISE_AT in release_captured_events
+ * below — the listener struct is defined later by ZMK_LISTENER, but the macro
+ * needs the symbol visible at the call site. */
+const struct zmk_listener zmk_listener_behavior_os_layer_mod;
+
+/* ── Captured interrupt events ───────────────────────────────────────── */
+/* While undecided, position events from other keys are captured (stolen
+ * from the event queue) so they can be replayed under the correct layer
+ * once the hold/tap decision is made.  Only position events are captured;
+ * keycode events are always bubbled.                                      */
+
+#define ZMK_BHV_OLM_MAX_CAPTURED_EVENTS 8
+
+static struct zmk_position_state_changed_event
+    captured_events[ZMK_BHV_OLM_MAX_CAPTURED_EVENTS];
+static int captured_events_count = 0;
+
+static void capture_position_event(const struct zmk_position_state_changed *ev) {
+    if (captured_events_count < ZMK_BHV_OLM_MAX_CAPTURED_EVENTS) {
+        captured_events[captured_events_count++] = copy_raised_zmk_position_state_changed(ev);
+    } else {
+        LOG_WRN("os-layer-mod: captured events buffer full");
+    }
+}
+
+static void release_captured_events(void) {
+    for (int i = 0; i < captured_events_count; i++) {
+        ZMK_EVENT_RAISE_AT(captured_events[i], behavior_os_layer_mod);
+    }
+    captured_events_count = 0;
+}
+
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 
 static const struct zmk_behavior_binding *
@@ -214,25 +246,6 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
     }
 
     if (olm->state == OLM_UNDECIDED || olm->state == OLM_TAP) {
-        /* For the balanced flavor, if another key was pressed (and not yet
-         * released) while this key was held, resolve as a hold rather than
-         * a tap even if we release before the interrupt key goes up. This
-         * mirrors ZMK hold-tap's capture/replay mechanism for the rollover
-         * case: press Y, press T (still down), release Y → hold fires. */
-        if (olm->state == OLM_UNDECIDED &&
-            olm->config->flavor == OLM_FLAVOR_BALANCED &&
-            olm->interrupt_key_down) {
-            k_work_cancel_delayable(&olm->work);
-            do_hold(olm);
-            /* Immediately release too — the interrupt key is still held so
-             * the host sees the modifier and layer activate/deactivate in
-             * the same release event, which is correct for rollover. */
-            zmk_keymap_layer_deactivate(olm->layer);
-            zmk_behavior_invoke_binding(&olm->mod_binding, event, false);
-            olm->active = false;
-            return ZMK_BEHAVIOR_OPAQUE;
-        }
-
         /* Tap: either released before timer fired, or timer resolved as
          * tap (tap-unless-interrupted). Cancel work in case it is still
          * pending (no-op if the timer already ran). */
@@ -240,6 +253,9 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
         if (undecided_olm == olm) {
             undecided_olm = NULL;
         }
+        /* Replay any captured interrupt keys on the base layer first so
+         * the output ordering matches the physical key sequence. */
+        release_captured_events();
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, true,  event.timestamp);
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, false, event.timestamp);
     } else if (olm->state == OLM_HOLD) {
@@ -255,15 +271,19 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
 
 /* ── Position-interrupt handler ─────────────────────────────────────── */
 
-static void handle_interrupt(struct active_os_layer_mod *olm,
+/* Called after the interrupt event has already been captured.  Returns
+ * true when a hold decision was triggered so the caller can replay the
+ * captured buffer into the now-active layer. */
+static bool handle_interrupt(struct active_os_layer_mod *olm,
                              const struct zmk_position_state_changed *ev) {
     switch (olm->config->flavor) {
     case OLM_FLAVOR_HOLD_PREFERRED:
     case OLM_FLAVOR_TAP_UNLESS_INTERRUPTED:
-        /* Both flavors trigger a hold the moment another key is pressed. */
+        /* Hold the moment another key is pressed. */
         if (ev->state) {
             k_work_cancel_delayable(&olm->work);
             do_hold(olm);
+            return true;
         }
         break;
     case OLM_FLAVOR_BALANCED:
@@ -273,6 +293,7 @@ static void handle_interrupt(struct active_os_layer_mod *olm,
         } else if (olm->interrupt_key_down) {
             k_work_cancel_delayable(&olm->work);
             do_hold(olm);
+            return true;
         }
         break;
     case OLM_FLAVOR_TAP_PREFERRED:
@@ -280,6 +301,7 @@ static void handle_interrupt(struct active_os_layer_mod *olm,
         /* Ignore interrupts; only the timer decides. */
         break;
     }
+    return false;
 }
 
 /* ── Combined event listener ─────────────────────────────────────────── */
@@ -288,8 +310,17 @@ static int behavior_os_layer_mod_listener(const zmk_event_t *eh) {
     /* Position events drive the interrupt-flavor logic. */
     const struct zmk_position_state_changed *pos_ev = as_zmk_position_state_changed(eh);
     if (pos_ev != NULL) {
-        if (undecided_olm != NULL && pos_ev->position != undecided_olm->position) {
-            handle_interrupt(undecided_olm, pos_ev);
+        if (undecided_olm != NULL && pos_ev->position != undecided_olm->position &&
+            undecided_olm->config->flavor != OLM_FLAVOR_TAP_PREFERRED) {
+            /* Capture this event so it can be replayed under the correct
+             * layer once the hold/tap decision is made. */
+            capture_position_event(pos_ev);
+            if (handle_interrupt(undecided_olm, pos_ev)) {
+                /* Hold just fired — replay captured events under the now
+                 * active layer before any subsequent keys are processed. */
+                release_captured_events();
+            }
+            return ZMK_EV_EVENT_CAPTURED;
         }
         return ZMK_EV_EVENT_BUBBLE;
     }
