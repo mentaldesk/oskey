@@ -204,6 +204,10 @@ static void os_layer_mod_work_handler(struct k_work *work) {
             }
         } else {
             do_hold(olm);
+            /* Replay any events captured before the timer fired — they
+             * must be processed under the now-active layer, and won't be
+             * replayed by the release path (which sees OLM_HOLD). */
+            release_captured_events();
         }
     }
 }
@@ -263,6 +267,9 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
          * modifier, dismissing the OS app-switcher menu. */
         zmk_keymap_layer_deactivate(olm->layer);
         zmk_behavior_invoke_binding(&olm->mod_binding, event, false);
+        /* Safety: discard any captured events that were not replayed
+         * (e.g. timer fired while an interrupt key was still down). */
+        captured_events_count = 0;
     }
 
     olm->active = false;
