@@ -3,15 +3,26 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Resolve the test path to an absolute path
-if [ -n "$1" ]; then
-    case "$1" in
-        /*) TEST_PATH="$1" ;;
-        *)  TEST_PATH="$SCRIPT_DIR/$1" ;;
-    esac
-else
-    TEST_PATH="$SCRIPT_DIR/tests/oskey/"
-fi
+run_suite() {
+    TEST_PATH="$1"
+    DOCKER_TEST_PATH="/workspace${TEST_PATH#$SCRIPT_DIR}"
+    docker run --rm \
+        -v "$SCRIPT_DIR:/workspace" \
+        -e "ZMK_TEST_PATH=$DOCKER_TEST_PATH" \
+        -e ZMK_TESTS_AUTO_ACCEPT \
+        zmkfirmware/zmk-build-arm:3.5 \
+        bash -c '
+            git config --global --add safe.directory "*"
+            set -e
+            cd /workspace/tests
+            cmake -P /workspace/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
+            cmake -P /workspace/tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
+            ZEPHYR_TOOLCHAIN_VARIANT=host \
+            ZMK_EXTRA_MODULES=/workspace \
+            ZMK_SRC_DIR=/workspace/tests/zmk/app \
+            /workspace/tests/zmk/app/run-test.sh "$ZMK_TEST_PATH"
+        '
+}
 
 if ! command -v docker >/dev/null 2>&1; then
     echo "Error: Docker is required to run tests."
@@ -19,20 +30,22 @@ if ! command -v docker >/dev/null 2>&1; then
     exit 1
 fi
 
-DOCKER_TEST_PATH="/workspace${TEST_PATH#$SCRIPT_DIR}"
-exec docker run --rm \
-    -v "$SCRIPT_DIR:/workspace" \
-    -e "ZMK_TEST_PATH=$DOCKER_TEST_PATH" \
-    -e ZMK_TESTS_AUTO_ACCEPT \
-    zmkfirmware/zmk-build-arm:3.5 \
-    bash -c '
-        git config --global --add safe.directory "*"
-        set -e
-        cd /workspace/tests
-        cmake -P /workspace/tests/zephyr/share/zephyr-package/cmake/zephyr_export.cmake
-        cmake -P /workspace/tests/zephyr/share/zephyrunittest-package/cmake/zephyr_export.cmake
-        ZEPHYR_TOOLCHAIN_VARIANT=host \
-        ZMK_EXTRA_MODULES=/workspace \
-        ZMK_SRC_DIR=/workspace/tests/zmk/app \
-        /workspace/tests/zmk/app/run-test.sh "$ZMK_TEST_PATH"
-    '
+if [ -n "$1" ]; then
+    # Single path supplied — resolve and run it directly.
+    case "$1" in
+        /*) TEST_PATH="$1" ;;
+        *)  TEST_PATH="$SCRIPT_DIR/$1" ;;
+    esac
+    run_suite "$TEST_PATH"
+else
+    # No argument — run every test suite.
+    FAIL=0
+    for suite in "$SCRIPT_DIR"/tests/*/; do
+        # Skip non-suite directories (no test cases inside).
+        if ! find "$suite" -name "native_posix_64.keymap" | grep -q .; then
+            continue
+        fi
+        run_suite "$suite" || FAIL=1
+    done
+    exit $FAIL
+fi

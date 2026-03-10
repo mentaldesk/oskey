@@ -1,0 +1,27 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to balanced. */
+&ok_ltm_test {
+    flavor = "balanced";
+};
+
+/* Default OS = Windows. Hold (1,1), press (0,0) as an interrupt key, then
+ * let the tapping-term timer expire while (0,0) is STILL held.
+ *
+ * Before the fix, the captured (0,0) key-down event was never replayed when
+ * the timer triggered the hold — it stayed in the buffer and leaked into the
+ * next interaction. After the fix, release_captured_events() is called
+ * immediately after do_hold() in the timer handler.
+ *
+ * Position (0,0) maps to &kp T on app_switch_layer (layer 1), so after the
+ * hold fires the replayed key-down should produce a T press. The subsequent
+ * (0,0) key-up arrives while layer 1 is still active, producing a T release.
+ * Releasing (1,1) then deactivates the layer and releases Left Alt. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(0,0,300)
+        ZMK_MOCK_RELEASE(0,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};
