@@ -30,22 +30,17 @@ if ! command -v docker >/dev/null 2>&1; then
     exit 1
 fi
 
-if [ -n "$1" ]; then
-    # Single path supplied — resolve and run it directly.
-    case "$1" in
-        /*) TEST_PATH="$1" ;;
-        *)  TEST_PATH="$SCRIPT_DIR/$1" ;;
-    esac
-    run_suite "$TEST_PATH"
-else
-    # No argument — run every test suite.
-    FAIL=0
-    for suite in "$SCRIPT_DIR"/tests/*/; do
-        # Skip non-suite directories (no test cases inside).
-        if ! find "$suite" -name "native_posix_64.keymap" | grep -q .; then
-            continue
-        fi
-        run_suite "$suite" || FAIL=1
-    done
-    exit $FAIL
+SUITES="$*"
+if [ -z "$SUITES" ]; then
+    SUITES="oskey os-layer-mod"
 fi
+
+FAIL=0
+for suite in $SUITES; do
+    case "$suite" in
+        /*) TEST_PATH="$suite" ;;
+        *)  TEST_PATH="$SCRIPT_DIR/tests/$suite" ;;
+    esac
+    run_suite "$TEST_PATH" || FAIL=1
+done
+exit $FAIL
