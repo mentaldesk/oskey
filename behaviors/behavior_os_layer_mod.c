@@ -257,11 +257,12 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
         if (undecided_olm == olm) {
             undecided_olm = NULL;
         }
-        /* Replay any captured interrupt keys on the base layer first so
-         * the output ordering matches the physical key sequence. */
-        release_captured_events();
+        /* Emit the tap keycode first (it was pressed first), then replay
+         * any captured interrupt keys so the output order matches the
+         * physical key sequence. */
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, true,  event.timestamp);
         raise_zmk_keycode_state_changed_from_encoded(olm->tap_keycode, false, event.timestamp);
+        release_captured_events();
     } else if (olm->state == OLM_HOLD) {
         /* Held past the timer — deactivate the layer and release the
          * modifier, dismissing the OS app-switcher menu. */

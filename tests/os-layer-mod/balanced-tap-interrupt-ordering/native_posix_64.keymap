@@ -1,0 +1,20 @@
+#include "../behavior_keymap.dtsi"
+
+/* Set flavor to balanced. */
+&ok_ltm_test {
+    flavor = "balanced";
+};
+
+/* Default OS = Windows. Press (1,1) then press (1,0) while undecided, then
+ * release (1,1) before releasing (1,0). Balanced only resolves to hold when
+ * the interrupt key is released — but (1,1) is released first, so (1,1)
+ * resolves as a tap. The tap keycode (G) must be emitted BEFORE the captured
+ * interrupt key (W) is replayed, preserving physical key order: G then W. */
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1,1,50)
+        ZMK_MOCK_PRESS(1,0,10)
+        ZMK_MOCK_RELEASE(1,1,10)
+        ZMK_MOCK_RELEASE(1,0,10)
+    >;
+};
