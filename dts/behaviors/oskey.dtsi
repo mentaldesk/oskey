@@ -328,7 +328,7 @@
             compatible = "zmk,behavior-os-key";
             #binding-cells = <0>;
             /*                 Win            Mac          Lin (DE-specific) */
-            bindings = <&kp LG(TAB)>, <&kp LC(UP)>, <&kp LG>;
+            bindings = <&kp LG(TAB)>, <&kp LC(UP)>, <&kp LGUI>;
         };
 
         ok_desktop: os_key_desktop {
