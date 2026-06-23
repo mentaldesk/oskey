@@ -51,7 +51,7 @@ manifest:
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: main
+      revision: v0.3.0
       import: app/west.yml
     - name: oskey
       remote: mentaldesk
@@ -59,6 +59,9 @@ manifest:
   self:
     path: config
 ```
+
+This version of oskey is tested with ZMK `v0.3.0`. Other ZMK revisions may
+require matching oskey compatibility updates.
 
 ---
 
