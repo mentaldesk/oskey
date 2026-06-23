@@ -188,7 +188,7 @@ static void do_hold(struct active_os_layer_mod *olm) {
     /* Hold the modifier so the OS app-switcher menu stays visible. */
     zmk_behavior_invoke_binding(&olm->mod_binding, mod_event, true);
     /* Activate the designated layer (e.g. an app-switch layer). */
-    zmk_keymap_layer_activate(olm->layer);
+    zmk_keymap_layer_activate(olm->layer, false);
 }
 
 static void os_layer_mod_work_handler(struct k_work *work) {
@@ -266,7 +266,7 @@ static int on_os_layer_mod_binding_released(struct zmk_behavior_binding *binding
     } else if (olm->state == OLM_HOLD) {
         /* Held past the timer — deactivate the layer and release the
          * modifier, dismissing the OS app-switcher menu. */
-        zmk_keymap_layer_deactivate(olm->layer);
+        zmk_keymap_layer_deactivate(olm->layer, false);
         zmk_behavior_invoke_binding(&olm->mod_binding, event, false);
         /* Safety: discard any captured events that were not replayed
          * (e.g. timer fired while an interrupt key was still down). */
