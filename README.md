@@ -60,6 +60,18 @@ manifest:
     path: config
 ```
 
+> **Keep the `oskey` revision matched to your `zmk` revision.** oskey compiles against ZMK's
+> internal behavior APIs, which change between ZMK versions, so each oskey branch is built and
+> tested against one specific ZMK revision. Pin both projects to the corresponding revision:
+>
+> | If your `zmk` revision is…                                | use `oskey` revision… |
+> |-----------------------------------------------------------|-----------------------|
+> | `main` (in development — Zephyr 4.1, the upcoming 0.4.0)   | `main`                |
+> | `v0.3.0` (latest stable release)                          | `v0.3.0`              |
+>
+> The example above tracks ZMK **`main`**, so both are pinned to `main`. Mismatched revisions
+> — e.g. oskey `main` against zmk `v0.3.0` — are unsupported and will likely fail to build.
+
 ---
 
 ## Configuration

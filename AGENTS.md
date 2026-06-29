@@ -2,6 +2,25 @@
 
 ZMK module providing OS-aware key behaviors. Users select an OS at runtime (Windows / macOS / Linux); behaviors dispatch the correct keycodes for that OS automatically.
 
+## Versioning & branches
+
+oskey mirrors ZMK's branch strategy, because each behavior compiles against ZMK's internal APIs,
+which change between ZMK versions. Each oskey branch targets one ZMK revision:
+
+| Branch    | Builds & tests against                                                              |
+|-----------|------------------------------------------------------------------------------------|
+| `main`    | ZMK `main` — the unreleased development line (Zephyr 4.1 / the upcoming 0.4.0). **This branch.** |
+| `v0.3.0`  | ZMK `v0.3.0` — latest stable release (Zephyr 3.5).                                  |
+
+- Send fixes for a released ZMK version to the matching `vX.Y.Z` branch; send work that tracks
+  unreleased ZMK to `main`.
+- `tests/manifest/west.yml` pins the ZMK revision the suite builds against — it must correspond to
+  the branch's target ZMK revision.
+- The `zmkfirmware/zmk-build-arm:<tag>` image in `init-tests` / `run-tests` matches the Zephyr
+  version of the targeted ZMK revision (`:4.1` on this branch).
+- When ZMK cuts a new release, snapshot the current `main` as the new `vX.Y.Z` branch before
+  moving `main` onto the next ZMK line.
+
 ## Behaviors
 
 ### `os-selector` (`zmk,behavior-os-selector`)
